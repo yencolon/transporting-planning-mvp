@@ -5,6 +5,8 @@
     "test",
     "dist",
     "**/*spec.ts",
+    "src/testing",
+    "prisma",
     "prisma.config.ts",
     "vitest.config.mts"
   ]

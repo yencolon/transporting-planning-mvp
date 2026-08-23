@@ -16,9 +16,9 @@ async function main() {
       name: 'Centro - Norte',
       points: {
         create: [
-          { sequence: 0, lat: 18.4861, lng: -69.9312 },
+          { sequence: 0, lat: 18.4861, lng: -69.9312, name: 'Parque Independencia' },
           { sequence: 1, lat: 18.4955, lng: -69.9401 },
-          { sequence: 2, lat: 18.5104, lng: -69.9498 },
+          { sequence: 2, lat: 18.5104, lng: -69.9498, name: 'Villa Mella' },
         ],
       },
     },
@@ -29,9 +29,9 @@ async function main() {
       name: 'Malecon Express',
       points: {
         create: [
-          { sequence: 0, lat: 18.4655, lng: -69.9401 },
+          { sequence: 0, lat: 18.4655, lng: -69.9401, name: 'Obelisco' },
           { sequence: 1, lat: 18.4612, lng: -69.9155 },
-          { sequence: 2, lat: 18.4589, lng: -69.8902 },
+          { sequence: 2, lat: 18.4589, lng: -69.8902, name: 'Sans Souci' },
         ],
       },
     },
@@ -46,19 +46,19 @@ async function main() {
         routeId: centroNorte.id,
         unitId: bus014.id,
         startAt: new Date('2026-08-24T06:00:00Z'),
-        durationMinutes: 90,
+        endAt: new Date('2026-08-24T07:30:00Z'),
       },
       {
         routeId: malecon.id,
         unitId: bus014.id,
         startAt: new Date('2026-08-24T08:00:00Z'),
-        durationMinutes: 60,
+        endAt: new Date('2026-08-24T09:00:00Z'),
       },
       {
         routeId: centroNorte.id,
         unitId: bus027.id,
         startAt: new Date('2026-08-24T07:30:00Z'),
-        durationMinutes: 90,
+        endAt: new Date('2026-08-24T09:00:00Z'),
       },
     ],
   });

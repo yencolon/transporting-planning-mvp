@@ -15,11 +15,12 @@ model Route {
 }
 
 model RoutePoint {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   routeId  String
   sequence Int
   lat      Float
   lng      Float
+  name     String?
 
   route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
@@ -33,11 +34,11 @@ model Unit {
 }
 
 model Duty {
-  id              String   @id @default(uuid())
-  routeId         String
-  unitId          String
-  startAt         DateTime
-  durationMinutes Int
+  id      String   @id @default(uuid())
+  routeId String
+  unitId  String
+  startAt DateTime
+  endAt   DateTime
 
   route Route @relation(fields: [routeId], references: [id])
   unit  Unit  @relation(fields: [unitId], references: [id])

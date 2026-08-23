@@ -9,15 +9,19 @@ NestJS 10, Express platform. Entry point `apps/api/src/main.ts`, root module `ap
 
 ## Layers
 
-Each feature is a folder with the three layers separated:
+Features live under `src/modules/`, one folder each, with the three layers separated. Everything outside `modules/` is plumbing, not business code:
 
 ```
-src/<feature>/
-  domain/         entities + repository interfaces (no Nest, no I/O)
-  application/    use cases; depend only on domain interfaces
-  infrastructure/ repository implementations (DB, HTTP, in-memory)
-  <feature>.controller.ts   interface layer: HTTP in/out only
-  <feature>.module.ts       wiring
+src/
+  modules/<feature>/
+    domain/         entities + repository ports (no Nest, no I/O)
+    application/    use cases; depend only on domain ports
+    infrastructure/ repository implementations (DB, HTTP, in-memory)
+    <feature>.controller.ts   interface layer: HTTP in/out only
+    <feature>.module.ts       provides use cases
+  infrastructure/   PrismaService, PersistenceModule — shared plumbing
+  generated/prisma/ generated client, gitignored
+  testing/          in-memory fakes for specs, excluded from the build
 ```
 
 Dependency direction is inward only: interface → application → domain. Infrastructure implements domain interfaces and is injected; nothing in `domain/` or `application/` may import from `infrastructure/`, `@nestjs/*` (beyond `@Injectable`), or Express types.
@@ -34,15 +38,24 @@ Prisma 7 + Postgres. Schema in `apps/api/prisma/schema.prisma`, connection URL r
 
 - `pnpm --filter=api db:seed` resets and reseeds sample data (`prisma/seed.ts`, wired through `migrations.seed` in `prisma.config.ts`). It deletes every row first — never run it against anything but local dev.
 
-Domain: `Route` (named, ordered `RoutePoint[]`), `Unit` (vehicle), `Duty` (route + unit + `startAt`/`durationMinutes`).
+Domain: `Route` (named, ordered `RoutePoint[]`, points optionally named), `Unit` (vehicle), `Duty` (route + unit + `startAt`/`endAt`).
+
+**The overlap rule is defined three times and all three must agree:** `TimeWindow.overlaps` in the domain, the `findOverlapping` predicate in `PrismaDutyRepository`, and the `Duty_unit_window_no_overlap` EXCLUDE constraint in the database. Windows are half-open — touching windows do not conflict. Change one, change all three.
 
 ## Wiring
 
-Bind interfaces to implementations in the feature module with a token provider, so the implementation can be swapped without touching the use case:
+Repository ports are **abstract classes**, so the class itself is the injection token and use cases need no `@Inject`:
 
 ```ts
-providers: [{ provide: THING_REPOSITORY, useClass: PrismaThingRepository }]
+export abstract class RouteRepository {
+  abstract findById(id: string): Promise<Route | null>;
+}
+
+// use case
+constructor(private readonly routes: RouteRepository) {}
 ```
+
+Every port is bound to an implementation in one place, `src/infrastructure/persistence.module.ts`. Feature modules (`RoutesModule`, `DutiesModule`, `UnitsModule`) import it and provide only use cases. Do not bind repositories inside a feature module — routes need duties and duties need routes, and that path leads straight to a circular dependency.
 
 ## Rules
 
@@ -50,6 +63,7 @@ providers: [{ provide: THING_REPOSITORY, useClass: PrismaThingRepository }]
 - Use cases take primitives or DTOs, return plain data, and never touch `Request`/`Response`.
 - Shared types come from `@repo/shared`.
 - Run: `pnpm turbo run dev --filter=api`, build with `nest build`.
+- Any new `.ts` file outside `src/` (a config, a seed) raises tsc's inferred rootDir and makes the build emit `dist/src/main.js`, breaking `start:prod`. Add such files to `exclude` in `tsconfig.build.json` and confirm `dist/main.js` still exists.
 
 ## Tests
 
