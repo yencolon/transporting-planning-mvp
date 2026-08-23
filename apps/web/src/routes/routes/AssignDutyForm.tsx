@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { messageFor } from '../../api/error-messages';
-import { useUnits } from '../units/hooks';
-import { UnitDayTimeline, overlaps, toBlock } from './UnitDayTimeline';
-import type { Block } from './UnitDayTimeline';
-import { useAssignDuty, useRoutes, useUnitDuties } from './hooks';
+import { useState } from "react";
+import { ErrorMessage } from "../../components/StatusMessage";
+import { useUnits } from "../units/hooks";
+import { UnitDayTimeline, overlaps, toBlock } from "./UnitDayTimeline";
+import type { Block } from "./UnitDayTimeline";
+import { useAssignDuty, useRoutes, useUnitDuties } from "./hooks";
 
 /** datetime-local gives a local wall-clock string; the API wants an instant. */
 const toIso = (local: string) => new Date(local).toISOString();
@@ -24,26 +24,22 @@ export function AssignDutyForm({ routeId }: { routeId: string }) {
   const { data: routes } = useRoutes();
   const assign = useAssignDuty();
 
-  const [unitId, setUnitId] = useState('');
-  const [startAt, setStartAt] = useState('');
-  const [endAt, setEndAt] = useState('');
+  const [unitId, setUnitId] = useState("");
+  const [startAt, setStartAt] = useState("");
+  const [endAt, setEndAt] = useState("");
 
   const bounds = startAt ? dayBounds(startAt) : undefined;
-  const { data: unitDuties } = useUnitDuties(
-    unitId,
-    bounds?.from,
-    bounds?.to,
-  );
+  const { data: unitDuties } = useUnitDuties(unitId, bounds?.from, bounds?.to);
 
   const routeName = (id: string) =>
-    routes?.find((route) => route.id === id)?.name ?? 'Ruta';
+    routes?.find((route) => route.id === id)?.name ?? "Ruta";
 
   const existing: Block[] = (unitDuties ?? []).map((duty) =>
     toBlock(duty, routeName(duty.routeId)),
   );
 
   const draft: Block | undefined = isComplete(startAt, endAt)
-    ? { startAt: toIso(startAt), endAt: toIso(endAt), label: 'Nuevo' }
+    ? { startAt: toIso(startAt), endAt: toIso(endAt), label: "Nuevo" }
     : undefined;
 
   const conflicts = draft
@@ -54,7 +50,7 @@ export function AssignDutyForm({ routeId }: { routeId: string }) {
     setStartAt(value);
     // Keep the window coherent: an end before the new start makes no sense.
     if (endAt && new Date(endAt) <= new Date(value)) {
-      setEndAt('');
+      setEndAt("");
     }
   };
 
@@ -71,22 +67,29 @@ export function AssignDutyForm({ routeId }: { routeId: string }) {
       .catch(() => undefined);
 
     if (created) {
-      setStartAt('');
-      setEndAt('');
+      setStartAt("");
+      setEndAt("");
     }
   };
 
   const ready = unitId && isComplete(startAt, endAt);
 
+  const fieldClass =
+    "rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-sm outline-none transition placeholder:text-zinc-600 focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20 disabled:bg-zinc-900/40 disabled:text-zinc-500";
+
   return (
     <form
       onSubmit={submit}
-      className="mt-3 grid gap-3 rounded-lg border border-slate-200 bg-white p-3"
+      className="mt-4 grid gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
     >
+      <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+        Asignar duty
+      </h3>
+
       <select
         value={unitId}
         onChange={(event) => setUnitId(event.target.value)}
-        className="rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+        className={fieldClass}
       >
         <option value="">Selecciona una unidad…</option>
         {units?.map((unit) => (
@@ -96,25 +99,25 @@ export function AssignDutyForm({ routeId }: { routeId: string }) {
         ))}
       </select>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        <label className="grid gap-1">
-          <span className="text-xs text-slate-500">Inicio</span>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1.5">
+          <span className="text-xs text-zinc-500">Inicio</span>
           <input
             type="datetime-local"
             value={startAt}
             onChange={(event) => changeStart(event.target.value)}
-            className="rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+            className={fieldClass}
           />
         </label>
-        <label className="grid gap-1">
-          <span className="text-xs text-slate-500">Fin</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs text-zinc-500">Fin</span>
           <input
             type="datetime-local"
             value={endAt}
             min={startAt || undefined}
             disabled={!startAt}
             onChange={(event) => setEndAt(event.target.value)}
-            className="rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-blue-500 disabled:bg-slate-100"
+            className={fieldClass}
           />
         </label>
       </div>
@@ -128,21 +131,14 @@ export function AssignDutyForm({ routeId }: { routeId: string }) {
         />
       )}
 
-      {assign.error && (
-        <p
-          role="alert"
-          className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {messageFor(assign.error)}
-        </p>
-      )}
+      {assign.error && <ErrorMessage error={assign.error} />}
 
       <button
         type="submit"
         disabled={!ready || assign.isPending}
-        className="justify-self-start rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+        className="justify-self-start rounded-lg bg-lime-400 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300 disabled:opacity-50"
       >
-        {assign.isPending ? 'Asignando…' : 'Asignar duty'}
+        {assign.isPending ? "Asignando…" : "Asignar duty"}
       </button>
     </form>
   );

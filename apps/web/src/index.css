@@ -1,5 +1,38 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/space-grotesk";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    "Space Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-zinc-950 font-sans text-zinc-100 antialiased;
+}
+
+::selection {
+  @apply bg-lime-400/30 text-lime-100;
+}
+
+.leaflet-container {
+  background: #09090b;
+  font: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply rounded-lg bg-zinc-900 text-zinc-100 shadow-xl;
+}
+
+.leaflet-popup-content {
+  @apply m-3 text-sm;
+}
+
+.leaflet-popup-tip {
+  @apply bg-zinc-900;
 }

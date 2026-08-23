@@ -1,10 +1,10 @@
-import type { RoutePointDto } from '@repo/shared';
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { messageFor } from '../../api/error-messages';
-import { ErrorMessage, Loading } from '../../components/StatusMessage';
-import { RouteMap } from './RouteMap';
-import { useCreateRoute, useRouteDetail, useUpdateRoute } from './hooks';
+import type { RoutePointDto } from "@repo/shared";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeftIcon, PlusIcon, TrashIcon } from "../../components/icons";
+import { ErrorMessage, Loading } from "../../components/StatusMessage";
+import { RouteMap } from "./RouteMap";
+import { useCreateRoute, useRouteDetail, useUpdateRoute } from "./hooks";
 
 interface DraftPoint {
   lat: string;
@@ -12,12 +12,12 @@ interface DraftPoint {
   name: string;
 }
 
-const emptyPoint: DraftPoint = { lat: '', lng: '', name: '' };
+const emptyPoint: DraftPoint = { lat: "", lng: "", name: "" };
 
 const toDraft = (point: RoutePointDto): DraftPoint => ({
   lat: String(point.lat),
   lng: String(point.lng),
-  name: point.name ?? '',
+  name: point.name ?? "",
 });
 
 /** Only fully filled coordinates are previewed on the map. */
@@ -37,12 +37,12 @@ export function RouteFormPage() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
 
-  const existing = useRouteDetail(id ?? '');
+  const existing = useRouteDetail(id ?? "");
   const create = useCreateRoute();
-  const update = useUpdateRoute(id ?? '');
+  const update = useUpdateRoute(id ?? "");
   const mutation = isEdit ? update : create;
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [points, setPoints] = useState<DraftPoint[]>([emptyPoint]);
 
   useEffect(() => {
@@ -72,8 +72,8 @@ export function RouteFormPage() {
   const removePoint = (index: number) =>
     setPoints((current) => current.filter((_, i) => i !== index));
 
-  const addPoint = (lat = '', lng = '') =>
-    setPoints((current) => [...current, { lat, lng, name: '' }]);
+  const addPoint = (lat = "", lng = "") =>
+    setPoints((current) => [...current, { lat, lng, name: "" }]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -81,7 +81,7 @@ export function RouteFormPage() {
     const body = {
       name,
       points: points
-        .filter((point) => point.lat !== '' && point.lng !== '')
+        .filter((point) => point.lat !== "" && point.lng !== "")
         .map((point) => ({
           lat: Number(point.lat),
           lng: Number(point.lng),
@@ -96,38 +96,39 @@ export function RouteFormPage() {
   };
 
   return (
-    <section>
-      <header className="mb-6">
+    <section className="grid gap-8">
+      <header className="grid gap-4">
         <Link
-          to={isEdit ? `/routes/${id}` : '/routes'}
-          className="text-sm text-slate-500 transition hover:text-blue-600"
+          to={isEdit ? `/routes/${id}` : "/routes"}
+          className="inline-flex w-fit items-center gap-1.5 text-sm text-zinc-500 transition hover:text-lime-300"
         >
-          ← Volver
+          <ArrowLeftIcon className="size-3.5" />
+          Volver
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          {isEdit ? 'Editar ruta' : 'Nueva ruta'}
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
+          {isEdit ? "Editar ruta" : "Nueva ruta"}
         </h1>
       </header>
 
-      <form onSubmit={submit} className="grid gap-6">
-        <label className="grid gap-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <form onSubmit={submit} className="grid gap-8">
+        <label className="grid gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
             Nombre
           </span>
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Centro - Norte"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+            className="rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm outline-none transition placeholder:text-zinc-600 focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20"
           />
         </label>
 
         <div>
-          <div className="mb-2 flex items-baseline justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
               Puntos
             </h2>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-zinc-500">
               Haz clic en el mapa para añadir un punto
             </span>
           </div>
@@ -141,9 +142,9 @@ export function RouteFormPage() {
             {points.map((point, index) => (
               <li
                 key={index}
-                className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2"
+                className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2.5"
               >
-                <span className="w-5 shrink-0 text-xs tabular-nums text-slate-400">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 font-display text-[11px] font-semibold text-lime-300">
                   {index + 1}
                 </span>
                 <input
@@ -153,7 +154,7 @@ export function RouteFormPage() {
                   }
                   placeholder="Latitud"
                   inputMode="decimal"
-                  className="w-32 rounded border border-slate-300 px-2 py-1 text-sm outline-none focus:border-blue-500"
+                  className="w-32 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none transition placeholder:text-zinc-600 focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20"
                 />
                 <input
                   value={point.lng}
@@ -162,7 +163,7 @@ export function RouteFormPage() {
                   }
                   placeholder="Longitud"
                   inputMode="decimal"
-                  className="w-32 rounded border border-slate-300 px-2 py-1 text-sm outline-none focus:border-blue-500"
+                  className="w-32 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none transition placeholder:text-zinc-600 focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20"
                 />
                 <input
                   value={point.name}
@@ -170,15 +171,16 @@ export function RouteFormPage() {
                     setPoint(index, { name: event.target.value })
                   }
                   placeholder="Nombre (opcional)"
-                  className="min-w-40 flex-1 rounded border border-slate-300 px-2 py-1 text-sm outline-none focus:border-blue-500"
+                  className="min-w-40 flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none transition placeholder:text-zinc-600 focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20"
                 />
                 <button
                   type="button"
                   onClick={() => removePoint(index)}
                   disabled={points.length === 1}
-                  className="rounded px-2 py-1 text-sm text-slate-400 transition hover:text-red-600 disabled:opacity-40 disabled:hover:text-slate-400"
+                  aria-label="Quitar punto"
+                  className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500"
                 >
-                  Quitar
+                  <TrashIcon className="size-4" />
                 </button>
               </li>
             ))}
@@ -187,32 +189,26 @@ export function RouteFormPage() {
           <button
             type="button"
             onClick={() => addPoint()}
-            className="mt-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 transition hover:border-blue-500 hover:text-blue-600"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg border border-dashed border-zinc-700 px-3.5 py-2 text-sm text-zinc-400 transition hover:border-lime-400/50 hover:text-lime-300"
           >
-            + Añadir punto
+            <PlusIcon className="size-3.5" />
+            Añadir punto
           </button>
         </div>
 
-        {mutation.error && (
-          <p
-            role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
-            {messageFor(mutation.error)}
-          </p>
-        )}
+        {mutation.error && <ErrorMessage error={mutation.error} />}
 
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-lime-400 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300 disabled:opacity-50"
           >
-            {mutation.isPending ? 'Guardando…' : 'Guardar'}
+            {mutation.isPending ? "Guardando…" : "Guardar"}
           </button>
           <Link
-            to={isEdit ? `/routes/${id}` : '/routes'}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 transition hover:bg-slate-100"
+            to={isEdit ? `/routes/${id}` : "/routes"}
+            className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-zinc-300 transition hover:border-zinc-600 hover:text-zinc-100"
           >
             Cancelar
           </Link>

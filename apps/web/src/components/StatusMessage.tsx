@@ -1,33 +1,34 @@
-import { ApiError } from '../api/client';
+import { messageFor } from "../api/error-messages";
+import { WarningIcon } from "./icons";
 
 export function ErrorMessage({ error }: { error: unknown }) {
-  const message =
-    error instanceof ApiError || error instanceof Error
-      ? error.message
-      : 'Algo salió mal.';
-
   return (
-    <p
+    <div
       role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+      className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
     >
-      {message}
-    </p>
+      <WarningIcon className="mt-0.5 size-4 shrink-0" />
+      <p>{messageFor(error)}</p>
+    </div>
   );
 }
 
 export function Loading({ label }: { label: string }) {
   return (
-    <p role="status" className="text-sm text-slate-500">
+    <div
+      role="status"
+      className="flex items-center gap-3 text-sm text-zinc-400"
+    >
+      <span className="size-4 animate-spin rounded-full border-2 border-zinc-700 border-t-lime-400" />
       {label}
-    </p>
+    </div>
   );
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">
+    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/40 px-4 py-10 text-center text-sm text-zinc-500">
       {children}
-    </p>
+    </div>
   );
 }

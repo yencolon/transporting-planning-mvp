@@ -1,6 +1,6 @@
-import type { RoutePointDto } from '@repo/shared';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import type { RoutePointDto } from "@repo/shared";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import {
   MapContainer,
   Marker,
@@ -8,17 +8,19 @@ import {
   Popup,
   TileLayer,
   useMapEvents,
-} from 'react-leaflet';
+} from "react-leaflet";
 
 // Leaflet's default marker images resolve to broken URLs under a bundler,
-// so the marker is a styled div instead.
-const markerIcon = L.divIcon({
-  className: 'rounded-full border-2 border-white bg-blue-600 shadow',
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
+// so the marker is a numbered div instead.
+const markerIcon = (sequence: number) =>
+  L.divIcon({
+    className: "",
+    html: `<div class="grid size-6 place-items-center rounded-full border-2 border-zinc-950 bg-lime-400 font-display text-[11px] font-bold text-zinc-950 shadow-lg shadow-lime-400/30">${sequence + 1}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
 
-const SANTO_DOMINGO: [number, number] = [18.4861, -69.9312];
+const CARACAS: [number, number] = [10.4806, -66.9036];
 
 interface RouteMapProps {
   points: RoutePointDto[];
@@ -26,7 +28,11 @@ interface RouteMapProps {
   onPick?: (lat: number, lng: number) => void;
 }
 
-function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }) {
+function ClickHandler({
+  onPick,
+}: {
+  onPick: (lat: number, lng: number) => void;
+}) {
   useMapEvents({
     click: (event) => onPick(event.latlng.lat, event.latlng.lng),
   });
@@ -41,26 +47,29 @@ export function RouteMap({ points, onPick }: RouteMapProps) {
 
   return (
     <MapContainer
-      className="h-85 w-full rounded-lg border border-slate-200"
-      center={positions[0] ?? SANTO_DOMINGO}
+      className="h-96 w-full overflow-hidden rounded-xl border border-zinc-800"
+      center={positions[0] ?? CARACAS}
       zoom={13}
       bounds={bounds}
       scrollWheelZoom={false}
     >
       <TileLayer
-        attribution="&copy; OpenStreetMap"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution="&copy; OpenStreetMap &copy; CARTO"
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       />
       {onPick && <ClickHandler onPick={onPick} />}
-      <Polyline positions={positions} />
+      <Polyline
+        positions={positions}
+        pathOptions={{ color: "#a3e635", weight: 3, opacity: 0.85 }}
+      />
       {points.map((point) => (
         <Marker
           key={point.sequence}
           position={[point.lat, point.lng]}
-          icon={markerIcon}
+          icon={markerIcon(point.sequence)}
         >
           <Popup>
-            {point.sequence + 1}. {point.name ?? 'Sin nombre'}
+            {point.sequence + 1}. {point.name ?? "Sin nombre"}
           </Popup>
         </Marker>
       ))}

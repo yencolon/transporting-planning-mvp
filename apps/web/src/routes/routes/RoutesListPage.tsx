@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
-import { Empty, ErrorMessage, Loading } from '../../components/StatusMessage';
-import { useRoutes } from './hooks';
+import { Link } from "react-router-dom";
+import { ChevronRightIcon, PlusIcon, RouteIcon } from "../../components/icons";
+import { Empty, ErrorMessage, Loading } from "../../components/StatusMessage";
+import { useRoutes } from "./hooks";
 
 export function RoutesListPage() {
   const { data: routes, isPending, error } = useRoutes();
@@ -14,18 +15,25 @@ export function RoutesListPage() {
   }
 
   return (
-    <section>
-      <header className="mb-6 flex items-end justify-between gap-4">
+    <section className="grid gap-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Rutas</h1>
-          <span className="text-sm text-slate-500">
-            {routes.length} {routes.length === 1 ? 'ruta' : 'rutas'}
-          </span>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-400">
+            Operación
+          </p>
+          <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight">
+            Rutas
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            {routes.length} {routes.length === 1 ? "ruta" : "rutas"}{" "}
+            planificadas
+          </p>
         </div>
         <Link
           to="/routes/new"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-lg bg-lime-400 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300"
         >
+          <PlusIcon />
           Nueva ruta
         </Link>
       </header>
@@ -33,17 +41,23 @@ export function RoutesListPage() {
       {routes.length === 0 ? (
         <Empty>Todavía no hay rutas.</Empty>
       ) : (
-        <ul className="grid gap-2">
+        <ul className="grid gap-3 sm:grid-cols-2">
           {routes.map((route) => (
             <li key={route.id}>
               <Link
                 to={`/routes/${route.id}`}
-                className="flex items-baseline justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 transition hover:border-blue-500 hover:bg-blue-50/40"
+                className="group block rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900"
               >
-                <span className="font-medium">{route.name}</span>
-                <span className="text-sm text-slate-500">
+                <div className="flex items-start justify-between">
+                  <span className="grid size-9 place-items-center rounded-lg bg-zinc-800 text-zinc-400 transition group-hover:bg-lime-400/10 group-hover:text-lime-300">
+                    <RouteIcon className="size-4.5" />
+                  </span>
+                  <ChevronRightIcon className="size-4 text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-lime-300" />
+                </div>
+                <h2 className="mt-4 font-medium">{route.name}</h2>
+                <p className="mt-1 text-xs text-zinc-500">
                   {route.pointCount} puntos
-                </span>
+                </p>
               </Link>
             </li>
           ))}
