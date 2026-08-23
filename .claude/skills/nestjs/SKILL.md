@@ -57,10 +57,18 @@ constructor(private readonly routes: RouteRepository) {}
 
 Every port is bound to an implementation in one place, `src/infrastructure/persistence.module.ts`. Feature modules (`RoutesModule`, `DutiesModule`, `UnitsModule`) import it and provide only use cases. Do not bind repositories inside a feature module — routes need duties and duties need routes, and that path leads straight to a circular dependency.
 
+## HTTP layer
+
+- Request validation is **Zod**, not class-validator. Schemas live in `modules/<feature>/dto/*.schema.ts` and are applied per-handler with `ZodValidationPipe` (`infrastructure/http/`). Nest's `ValidationPipe` is unused.
+- Schemas guard shape and types only. Business rules — coordinate ranges, blank names, window ordering — stay in the domain and reach HTTP through the filter.
+- `DomainExceptionFilter` (`infrastructure/http/`) maps domain errors to status codes: not-found → 404, invalid → 400, overlap / route-still-has-duties → 409. Add a new domain error to its map or it surfaces as a 500.
+- `configureApp()` in `src/app.setup.ts` is the one place global filters/pipes are registered; `main.ts` and every e2e spec call it, so tests exercise the same stack as production.
+
 ## Rules
 
 - Controllers hold no business logic — validate/parse input, call a use case, map the result.
 - Use cases take primitives or DTOs, return plain data, and never touch `Request`/`Response`.
+- `execute` is always `async`, even when the body is a single `return`. Domain validation throws before any promise exists, so a non-async `execute` throws synchronously and `execute(x).catch(...)` blows up instead of catching.
 - Shared types come from `@repo/shared`.
 - Run: `pnpm turbo run dev --filter=api`, build with `nest build`.
 - Any new `.ts` file outside `src/` (a config, a seed) raises tsc's inferred rootDir and makes the build emit `dist/src/main.js`, breaking `start:prod`. Add such files to `exclude` in `tsconfig.build.json` and confirm `dist/main.js` still exists.
@@ -73,3 +81,5 @@ Vitest, configured in `vitest.config.mts` with `unplugin-swc` (needed for `emitD
 - `pnpm --filter=api test:e2e` — `test/**/*.e2e-spec.ts`
 
 Test the application layer directly with in-memory fakes of the repository interfaces. Keep tests short: one behaviour per test, no restating the implementation.
+
+Anything that depends on Postgres semantics belongs in `test/*.e2e-spec.ts`, not in a unit test with a fake: the EXCLUDE constraint, transaction behaviour in `update`, and concurrency. An in-memory fake cannot prove any of them. Each e2e spec creates its own route and unit and deletes them afterwards — the seeded rows must survive a test run untouched.

@@ -5,6 +5,7 @@ import { DeleteRoute } from './application/delete-route';
 import { GetRouteDetail } from './application/get-route-detail';
 import { ListRoutes } from './application/list-routes';
 import { UpdateRoute } from './application/update-route';
+import { RoutesController } from './routes.controller';
 
 const useCases = [
   CreateRoute,
@@ -16,6 +17,7 @@ const useCases = [
 
 @Module({
   imports: [PersistenceModule],
+  controllers: [RoutesController],
   providers: useCases,
   exports: useCases,
 })

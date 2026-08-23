@@ -3,6 +3,8 @@ import {
   InMemoryRouteRepository,
   InMemoryUnitRepository,
 } from '../../../testing/in-memory-repositories';
+import { RouteNotFoundError } from '../../routes/domain/errors';
+import { UnitNotFoundError } from '../../units/domain/errors';
 import { InvalidTimeWindowError, OverlappingDutyError } from '../domain/errors';
 import { AssignDuty } from './assign-duty';
 
@@ -81,6 +83,89 @@ describe('AssignDuty', () => {
     });
 
     expect(other.unitId).toBe(busB.id);
+  });
+
+  it('rejects a window that fully contains an existing duty', async () => {
+    const { assign, routeId, busA } = await setup();
+    await assign.execute({
+      routeId,
+      unitId: busA.id,
+      startAt: at('08'),
+      endAt: at('09'),
+    });
+
+    await expect(
+      assign.execute({
+        routeId,
+        unitId: busA.id,
+        startAt: at('06'),
+        endAt: at('12'),
+      }),
+    ).rejects.toBeInstanceOf(OverlappingDutyError);
+  });
+
+  it('rejects a window that falls entirely inside an existing duty', async () => {
+    const { assign, routeId, busA } = await setup();
+    await assign.execute({
+      routeId,
+      unitId: busA.id,
+      startAt: at('06'),
+      endAt: at('12'),
+    });
+
+    await expect(
+      assign.execute({
+        routeId,
+        unitId: busA.id,
+        startAt: at('08'),
+        endAt: at('09'),
+      }),
+    ).rejects.toBeInstanceOf(OverlappingDutyError);
+  });
+
+  it('accepts a window ending exactly when the next one starts', async () => {
+    const { assign, routeId, busA } = await setup();
+    await assign.execute({
+      routeId,
+      unitId: busA.id,
+      startAt: at('08'),
+      endAt: at('10'),
+    });
+
+    const earlier = await assign.execute({
+      routeId,
+      unitId: busA.id,
+      startAt: at('06'),
+      endAt: at('08'),
+    });
+
+    expect(earlier.window.endAt).toEqual(at('08'));
+  });
+
+  it('rejects a duty for a route that does not exist', async () => {
+    const { assign, busA } = await setup();
+
+    await expect(
+      assign.execute({
+        routeId: 'missing-route',
+        unitId: busA.id,
+        startAt: at('06'),
+        endAt: at('08'),
+      }),
+    ).rejects.toBeInstanceOf(RouteNotFoundError);
+  });
+
+  it('rejects a duty for a unit that does not exist', async () => {
+    const { assign, routeId } = await setup();
+
+    await expect(
+      assign.execute({
+        routeId,
+        unitId: 'missing-unit',
+        startAt: at('06'),
+        endAt: at('08'),
+      }),
+    ).rejects.toBeInstanceOf(UnitNotFoundError);
   });
 
   it('rejects a window that ends before it starts', async () => {

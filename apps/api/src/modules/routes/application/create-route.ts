@@ -11,7 +11,7 @@ export interface CreateRouteInput {
 export class CreateRoute {
   constructor(private readonly routes: RouteRepository) {}
 
-  execute(input: CreateRouteInput): Promise<Route> {
+  async execute(input: CreateRouteInput): Promise<Route> {
     return this.routes.create({
       name: toRouteName(input.name),
       points: toOrderedPoints(input.points),
