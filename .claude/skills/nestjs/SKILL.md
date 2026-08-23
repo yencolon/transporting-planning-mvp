@@ -30,7 +30,11 @@ Prisma 7 + Postgres. Schema in `apps/api/prisma/schema.prisma`, connection URL r
 - Prisma 7 has no Rust engine — the client needs a driver adapter (`@prisma/adapter-pg`). It is wired in `PrismaService`, nowhere else.
 - The generated client lands in `src/generated/prisma` and is gitignored; `postinstall` regenerates it.
 - Only `infrastructure/` may import from `src/generated/prisma`. A `domain/` or `application/` file importing Prisma types is a layering break — map to domain types in the repository implementation.
-- `pnpm db:up` (root) starts Postgres in Docker; `pnpm --filter=api db:migrate` applies migrations.
+- `pnpm db:up` (root) starts Postgres in Docker; `pnpm --filter=api db:migrate` applies migrations. Prisma 7's `migrate dev` does **not** regenerate the client, so `db:migrate` chains `prisma generate` — never call `prisma migrate dev` bare.
+
+- `pnpm --filter=api db:seed` resets and reseeds sample data (`prisma/seed.ts`, wired through `migrations.seed` in `prisma.config.ts`). It deletes every row first — never run it against anything but local dev.
+
+Domain: `Route` (named, ordered `RoutePoint[]`), `Unit` (vehicle), `Duty` (route + unit + `startAt`/`durationMinutes`).
 
 ## Wiring
 
