@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { messageFor } from '../../api/error-messages';
-import { useAssignDuty, useUnits } from './hooks';
+import { useUnits } from '../units/hooks';
+import { useAssignDuty } from './hooks';
 
 /** datetime-local gives a local wall-clock string; the API wants an instant. */
 const toIso = (local: string) => new Date(local).toISOString();

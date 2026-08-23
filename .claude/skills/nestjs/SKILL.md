@@ -38,7 +38,9 @@ Prisma 7 + Postgres. Schema in `apps/api/prisma/schema.prisma`, connection URL r
 
 - `pnpm --filter=api db:seed` resets and reseeds sample data (`prisma/seed.ts`, wired through `migrations.seed` in `prisma.config.ts`). It deletes every row first — never run it against anything but local dev.
 
-Domain: `Route` (named, ordered `RoutePoint[]`, points optionally named), `Unit` (vehicle), `Duty` (route + unit + `startAt`/`endAt`).
+Domain: `Route` (named, ordered `RoutePoint[]`, points optionally named), `Unit` (vehicle, `name` unique), `Duty` (route + unit + `startAt`/`endAt`).
+
+Deleting a `Route` or a `Unit` that still has duties is refused with a 409 rather than cascading. Both follow the same shape as the overlap rule: an application-layer check plus a database constraint behind it (`Unit_name_key` for duplicate names, FK restrict for the duty references), with the repository translating the violation into the domain error.
 
 **The overlap rule is defined three times and all three must agree:** `TimeWindow.overlaps` in the domain, the `findOverlapping` predicate in `PrismaDutyRepository`, and the `Duty_unit_window_no_overlap` EXCLUDE constraint in the database. Windows are half-open — touching windows do not conflict. Change one, change all three.
 

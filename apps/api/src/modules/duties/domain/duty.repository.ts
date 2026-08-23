@@ -17,6 +17,7 @@ export abstract class DutyRepository {
   abstract update(id: string, changes: DutyChanges): Promise<Duty>;
   abstract findById(id: string): Promise<Duty | null>;
   abstract findByRouteId(routeId: string): Promise<Duty[]>;
+  abstract findByUnitId(unitId: string): Promise<Duty[]>;
   abstract findOverlapping(
     unitId: string,
     window: TimeWindow,

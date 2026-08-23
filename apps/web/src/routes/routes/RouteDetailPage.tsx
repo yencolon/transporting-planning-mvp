@@ -2,14 +2,10 @@ import type { DutyDto } from '@repo/shared';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { messageFor } from '../../api/error-messages';
 import { Empty, ErrorMessage, Loading } from '../../components/StatusMessage';
+import { useUnits } from '../units/hooks';
 import { AssignDutyForm } from './AssignDutyForm';
 import { RouteMap } from './RouteMap';
-import {
-  useDeleteDuty,
-  useDeleteRoute,
-  useRouteDetail,
-  useUnits,
-} from './hooks';
+import { useDeleteDuty, useDeleteRoute, useRouteDetail } from './hooks';
 
 const timeFormat = new Intl.DateTimeFormat('es-DO', {
   dateStyle: 'medium',

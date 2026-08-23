@@ -28,6 +28,7 @@ describe('OpenAPI document', () => {
       '/routes',
       '/routes/{id}',
       '/units',
+      '/units/{id}',
     ]);
   });
 

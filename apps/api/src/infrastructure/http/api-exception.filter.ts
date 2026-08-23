@@ -17,7 +17,12 @@ import {
   RouteHasDutiesError,
   RouteNotFoundError,
 } from '../../modules/routes/domain/errors';
-import { UnitNotFoundError } from '../../modules/units/domain/errors';
+import {
+  DuplicateUnitError,
+  InvalidUnitError,
+  UnitHasDutiesError,
+  UnitNotFoundError,
+} from '../../modules/units/domain/errors';
 import { ApiErrorIssue } from './error.response';
 
 type DomainErrorClass = new (...args: any[]) => Error;
@@ -28,8 +33,11 @@ const STATUS_BY_DOMAIN_ERROR = new Map<DomainErrorClass, HttpStatus>([
   [UnitNotFoundError, HttpStatus.NOT_FOUND],
   [InvalidRouteError, HttpStatus.BAD_REQUEST],
   [InvalidTimeWindowError, HttpStatus.BAD_REQUEST],
+  [InvalidUnitError, HttpStatus.BAD_REQUEST],
   [OverlappingDutyError, HttpStatus.CONFLICT],
   [RouteHasDutiesError, HttpStatus.CONFLICT],
+  [DuplicateUnitError, HttpStatus.CONFLICT],
+  [UnitHasDutiesError, HttpStatus.CONFLICT],
 ]);
 
 /**

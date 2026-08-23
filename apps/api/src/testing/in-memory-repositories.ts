@@ -82,6 +82,10 @@ export class InMemoryDutyRepository implements DutyRepository {
     return [...this.rows.values()].filter((duty) => duty.routeId === routeId);
   }
 
+  async findByUnitId(unitId: string): Promise<Duty[]> {
+    return [...this.rows.values()].filter((duty) => duty.unitId === unitId);
+  }
+
   async findOverlapping(
     unitId: string,
     window: TimeWindow,
@@ -105,17 +109,30 @@ export class InMemoryDutyRepository implements DutyRepository {
 export class InMemoryUnitRepository implements UnitRepository {
   readonly rows = new Map<string, Unit>();
 
+  /** Synchronous helper for specs that just need a unit to exist. */
   add(name: string): Unit {
     const unit = { id: nextId('unit'), name };
     this.rows.set(unit.id, unit);
     return unit;
   }
 
+  async create(name: string): Promise<Unit> {
+    return this.add(name);
+  }
+
   async findById(id: string): Promise<Unit | null> {
     return this.rows.get(id) ?? null;
   }
 
+  async findByName(name: string): Promise<Unit | null> {
+    return [...this.rows.values()].find((unit) => unit.name === name) ?? null;
+  }
+
   async list(): Promise<Unit[]> {
     return [...this.rows.values()];
+  }
+
+  async delete(id: string): Promise<void> {
+    this.rows.delete(id);
   }
 }

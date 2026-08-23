@@ -23,6 +23,10 @@ export const updateRouteSchema = z.strictObject({
   points: z.array(routePointSchema).optional(),
 });
 
+export const createUnitSchema = z.strictObject({
+  name: z.string(),
+});
+
 export const assignDutySchema = z.strictObject({
   routeId: z.string().min(1),
   unitId: z.string().min(1),
@@ -36,6 +40,7 @@ export const rescheduleDutySchema = z.strictObject({
   endAt: z.coerce.date().optional(),
 });
 
+export type CreateUnitBody = z.infer<typeof createUnitSchema>;
 export type CreateRouteBody = z.infer<typeof createRouteSchema>;
 export type UpdateRouteBody = z.infer<typeof updateRouteSchema>;
 export type AssignDutyBody = z.infer<typeof assignDutySchema>;

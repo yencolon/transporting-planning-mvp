@@ -12,6 +12,9 @@ const COPY: Record<string, string> = {
   RouteNotFoundError: 'La ruta ya no existe.',
   DutyNotFoundError: 'El duty ya no existe.',
   UnitNotFoundError: 'La unidad seleccionada ya no existe.',
+  DuplicateUnitError: 'Ya existe una unidad con ese nombre.',
+  UnitHasDutiesError:
+    'No se puede eliminar la unidad: todavía tiene duties asignados.',
 };
 
 export function messageFor(error: unknown): string {

@@ -2,15 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreateRouteBody, UpdateRouteBody } from '@repo/shared';
 import { dutiesApi } from '../../api/duties';
 import { routesApi } from '../../api/routes';
-import { unitsApi } from '../../api/units';
 
 export const routeKeys = {
   all: ['routes'] as const,
   detail: (id: string) => ['routes', id] as const,
-};
-
-export const unitKeys = {
-  all: ['units'] as const,
 };
 
 export function useRoutes() {
@@ -22,10 +17,6 @@ export function useRouteDetail(id: string) {
     queryKey: routeKeys.detail(id),
     queryFn: () => routesApi.detail(id),
   });
-}
-
-export function useUnits() {
-  return useQuery({ queryKey: unitKeys.all, queryFn: unitsApi.list });
 }
 
 export function useCreateRoute() {

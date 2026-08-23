@@ -64,6 +64,14 @@ export class PrismaDutyRepository implements DutyRepository {
     return rows.map((row) => this.toDomain(row));
   }
 
+  async findByUnitId(unitId: string): Promise<Duty[]> {
+    const rows = await this.prisma.duty.findMany({
+      where: { unitId },
+      orderBy: { startAt: 'asc' },
+    });
+    return rows.map((row) => this.toDomain(row));
+  }
+
   async findOverlapping(
     unitId: string,
     window: TimeWindow,
