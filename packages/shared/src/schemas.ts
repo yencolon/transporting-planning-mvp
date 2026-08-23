@@ -34,6 +34,13 @@ export const assignDutySchema = z.strictObject({
   endAt: z.coerce.date(),
 });
 
+/** Query for a unit's schedule; `from`/`to` narrow it to a day. */
+export const listUnitDutiesSchema = z.strictObject({
+  unitId: z.string().min(1),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+});
+
 export const rescheduleDutySchema = z.strictObject({
   unitId: z.string().min(1).optional(),
   startAt: z.coerce.date().optional(),
@@ -44,4 +51,5 @@ export type CreateUnitBody = z.infer<typeof createUnitSchema>;
 export type CreateRouteBody = z.infer<typeof createRouteSchema>;
 export type UpdateRouteBody = z.infer<typeof updateRouteSchema>;
 export type AssignDutyBody = z.infer<typeof assignDutySchema>;
+export type ListUnitDutiesQuery = z.infer<typeof listUnitDutiesSchema>;
 export type RescheduleDutyBody = z.infer<typeof rescheduleDutySchema>;

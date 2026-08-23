@@ -2,17 +2,26 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { ApiBody, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiNoContentResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   AssignDutyBody,
+  ListUnitDutiesQuery,
   RescheduleDutyBody,
   assignDutySchema,
+  listUnitDutiesSchema,
   rescheduleDutySchema,
 } from '@repo/shared';
 import {
@@ -23,6 +32,7 @@ import { toBodySchema } from '../../infrastructure/http/zod-json-schema';
 import { ZodValidationPipe } from '../../infrastructure/http/zod-validation.pipe';
 import { AssignDuty } from './application/assign-duty';
 import { DeleteDuty } from './application/delete-duty';
+import { ListUnitDuties } from './application/list-unit-duties';
 import { RescheduleDuty } from './application/reschedule-duty';
 import { DutyResponse, toDutyResponse } from './duty.response';
 
@@ -33,7 +43,22 @@ export class DutiesController {
     private readonly assignDuty: AssignDuty,
     private readonly rescheduleDuty: RescheduleDuty,
     private readonly deleteDuty: DeleteDuty,
+    private readonly listUnitDuties: ListUnitDuties,
   ) {}
+
+  @Get()
+  @ApiQuery({ name: 'unitId', required: true })
+  @ApiQuery({ name: 'from', required: false, schema: { format: 'date-time' } })
+  @ApiQuery({ name: 'to', required: false, schema: { format: 'date-time' } })
+  @ApiEnvelopeResponse(DutyResponse, { status: 200, isArray: true })
+  @ApiErrorResponse(400, 'Invalid query')
+  async list(
+    @Query(new ZodValidationPipe(listUnitDutiesSchema))
+    query: ListUnitDutiesQuery,
+  ): Promise<DutyResponse[]> {
+    const duties = await this.listUnitDuties.execute(query);
+    return duties.map(toDutyResponse);
+  }
 
   @Post()
   @ApiBody({ schema: toBodySchema(assignDutySchema) })

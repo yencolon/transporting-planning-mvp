@@ -157,6 +157,45 @@ describe('Duties API', () => {
     });
   });
 
+  describe('GET /duties', () => {
+    it('returns the schedule of a unit', async () => {
+      await assign({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }).expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get('/duties')
+        .query({ unitId })
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].startAt).toBe(at('06'));
+    });
+
+    it('narrows the schedule to the requested range', async () => {
+      await assign({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }).expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get('/duties')
+        .query({ unitId, from: at('09'), to: at('12') })
+        .expect(200);
+
+      expect(response.body.data).toEqual([]);
+    });
+
+    it('returns 400 without a unit', async () => {
+      await request(app.getHttpServer()).get('/duties').expect(400);
+    });
+  });
+
   describe('PATCH /duties/:id', () => {
     it('reschedules a duty', async () => {
       const created = await assign({

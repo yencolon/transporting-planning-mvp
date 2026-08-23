@@ -8,6 +8,20 @@ export const routeKeys = {
   detail: (id: string) => ['routes', id] as const,
 };
 
+export const dutyKeys = {
+  forUnit: (unitId: string, from?: string, to?: string) =>
+    ['duties', 'unit', unitId, from ?? '', to ?? ''] as const,
+};
+
+/** The unit's existing schedule, used to show a clash before submitting. */
+export function useUnitDuties(unitId: string, from?: string, to?: string) {
+  return useQuery({
+    queryKey: dutyKeys.forUnit(unitId, from, to),
+    queryFn: () => dutiesApi.listForUnit(unitId, from, to),
+    enabled: Boolean(unitId),
+  });
+}
+
 export function useRoutes() {
   return useQuery({ queryKey: routeKeys.all, queryFn: routesApi.list });
 }
@@ -63,8 +77,10 @@ export function useAssignDuty() {
 
   return useMutation({
     mutationFn: (body: AssignDutyInput) => dutiesApi.assign(body),
-    onSuccess: (_duty, { routeId }) =>
-      queryClient.invalidateQueries({ queryKey: routeKeys.detail(routeId) }),
+    onSuccess: (_duty, { routeId }) => {
+      queryClient.invalidateQueries({ queryKey: routeKeys.detail(routeId) });
+      queryClient.invalidateQueries({ queryKey: ['duties', 'unit'] });
+    },
   });
 }
 
@@ -73,7 +89,9 @@ export function useDeleteDuty(routeId: string) {
 
   return useMutation({
     mutationFn: (id: string) => dutiesApi.remove(id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: routeKeys.detail(routeId) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: routeKeys.detail(routeId) });
+      queryClient.invalidateQueries({ queryKey: ['duties', 'unit'] });
+    },
   });
 }

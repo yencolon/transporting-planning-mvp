@@ -82,8 +82,10 @@ export class InMemoryDutyRepository implements DutyRepository {
     return [...this.rows.values()].filter((duty) => duty.routeId === routeId);
   }
 
-  async findByUnitId(unitId: string): Promise<Duty[]> {
-    return [...this.rows.values()].filter((duty) => duty.unitId === unitId);
+  async findByUnitId(unitId: string, range?: TimeWindow): Promise<Duty[]> {
+    return [...this.rows.values()]
+      .filter((duty) => duty.unitId === unitId)
+      .filter((duty) => !range || duty.window.overlaps(range));
   }
 
   async findOverlapping(

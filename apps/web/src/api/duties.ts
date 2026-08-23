@@ -11,6 +11,16 @@ type Wire<T> = {
 };
 
 export const dutiesApi = {
+  /** Schedule of one unit, optionally narrowed to a range. */
+  listForUnit: (unitId: string, from?: string, to?: string) => {
+    const query = new URLSearchParams({ unitId });
+    if (from && to) {
+      query.set('from', from);
+      query.set('to', to);
+    }
+    return apiRequest<DutyDto[]>(`/duties?${query}`);
+  },
+
   assign: (body: Wire<AssignDutyBody>) =>
     apiRequest<DutyDto>('/duties', {
       method: 'POST',

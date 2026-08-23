@@ -64,9 +64,14 @@ export class PrismaDutyRepository implements DutyRepository {
     return rows.map((row) => this.toDomain(row));
   }
 
-  async findByUnitId(unitId: string): Promise<Duty[]> {
+  async findByUnitId(unitId: string, range?: TimeWindow): Promise<Duty[]> {
     const rows = await this.prisma.duty.findMany({
-      where: { unitId },
+      where: {
+        unitId,
+        ...(range
+          ? { startAt: { lt: range.endAt }, endAt: { gt: range.startAt } }
+          : {}),
+      },
       orderBy: { startAt: 'asc' },
     });
     return rows.map((row) => this.toDomain(row));
