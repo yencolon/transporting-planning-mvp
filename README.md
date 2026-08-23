@@ -49,6 +49,22 @@ pnpm dev                            # API en :3000, web en :5173
 `pnpm db:down` para el contenedor. `pnpm --filter=api db:studio` abre Prisma
 Studio si quieres inspeccionar los datos.
 
+### Contra un Postgres gestionado (Supabase, Neon, RDS)
+
+Docker es solo comodidad. Cambia `DATABASE_URL` en `apps/api/.env` y aplica el
+esquema:
+
+```bash
+pnpm --filter=api exec prisma migrate deploy
+pnpm --filter=api db:seed        # ojo: vacía las tablas antes de insertar
+```
+
+En Supabase usa la cadena del **Session pooler**, no la conexión directa: esta
+última resuelve solo por IPv6 y suele dar `P1001` desde una red sin IPv6.
+
+El único requisito real es que se pueda habilitar la extensión `btree_gist`, de
+la que depende la restricción `EXCLUDE` que sostiene la regla bajo concurrencia.
+
 ## Verificar la regla de solapamiento
 
 La regla se aplica en dos sitios, y los dos importan:
