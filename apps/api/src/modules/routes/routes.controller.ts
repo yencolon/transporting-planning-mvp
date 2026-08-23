@@ -9,17 +9,17 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBody, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import {
-  ApiBadRequestResponse,
-  ApiBody,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { ErrorResponse } from '../../infrastructure/http/error.response';
+  CreateRouteBody,
+  UpdateRouteBody,
+  createRouteSchema,
+  updateRouteSchema,
+} from '@repo/shared';
+import {
+  ApiEnvelopeResponse,
+  ApiErrorResponse,
+} from '../../infrastructure/http/api-envelope.decorator';
 import { toBodySchema } from '../../infrastructure/http/zod-json-schema';
 import { ZodValidationPipe } from '../../infrastructure/http/zod-validation.pipe';
 import { toDutyResponse } from '../duties/duty.response';
@@ -28,12 +28,6 @@ import { DeleteRoute } from './application/delete-route';
 import { GetRouteDetail } from './application/get-route-detail';
 import { ListRoutes } from './application/list-routes';
 import { UpdateRoute } from './application/update-route';
-import {
-  CreateRouteBody,
-  UpdateRouteBody,
-  createRouteSchema,
-  updateRouteSchema,
-} from './dto/route.schema';
 import {
   RouteDetailResponse,
   RouteResponse,
@@ -53,11 +47,8 @@ export class RoutesController {
 
   @Post()
   @ApiBody({ schema: toBodySchema(createRouteSchema) })
-  @ApiCreatedResponse({ type: RouteResponse })
-  @ApiBadRequestResponse({
-    description: 'Invalid route or request body',
-    type: ErrorResponse,
-  })
+  @ApiEnvelopeResponse(RouteResponse, { status: 201 })
+  @ApiErrorResponse(400, 'Invalid route or request body')
   create(
     @Body(new ZodValidationPipe(createRouteSchema)) body: CreateRouteBody,
   ): Promise<RouteResponse> {
@@ -65,14 +56,14 @@ export class RoutesController {
   }
 
   @Get()
-  @ApiOkResponse({ type: [RouteSummaryResponse] })
+  @ApiEnvelopeResponse(RouteSummaryResponse, { status: 200, isArray: true })
   list(): Promise<RouteSummaryResponse[]> {
     return this.listRoutes.execute();
   }
 
   @Get(':id')
-  @ApiOkResponse({ type: RouteDetailResponse })
-  @ApiNotFoundResponse({ description: 'Route not found', type: ErrorResponse })
+  @ApiEnvelopeResponse(RouteDetailResponse, { status: 200 })
+  @ApiErrorResponse(404, 'Route not found')
   async detail(@Param('id') id: string): Promise<RouteDetailResponse> {
     const { route, duties } = await this.getRouteDetail.execute(id);
     return { ...route, duties: duties.map(toDutyResponse) };
@@ -80,12 +71,9 @@ export class RoutesController {
 
   @Patch(':id')
   @ApiBody({ schema: toBodySchema(updateRouteSchema) })
-  @ApiOkResponse({ type: RouteResponse })
-  @ApiBadRequestResponse({
-    description: 'Invalid route or request body',
-    type: ErrorResponse,
-  })
-  @ApiNotFoundResponse({ description: 'Route not found', type: ErrorResponse })
+  @ApiEnvelopeResponse(RouteResponse, { status: 200 })
+  @ApiErrorResponse(400, 'Invalid route or request body')
+  @ApiErrorResponse(404, 'Route not found')
   update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateRouteSchema)) body: UpdateRouteBody,
@@ -95,12 +83,9 @@ export class RoutesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse()
-  @ApiNotFoundResponse({ description: 'Route not found', type: ErrorResponse })
-  @ApiConflictResponse({
-    description: 'Route still has duties',
-    type: ErrorResponse,
-  })
+  @ApiNoContentResponse({ description: 'Deleted; no body' })
+  @ApiErrorResponse(404, 'Route not found')
+  @ApiErrorResponse(409, 'Route still has duties')
   remove(@Param('id') id: string): Promise<void> {
     return this.deleteRoute.execute(id);
   }

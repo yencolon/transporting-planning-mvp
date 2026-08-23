@@ -25,8 +25,8 @@ describe('Routes API', () => {
       .post('/routes')
       .send(newRoutePayload())
       .expect(201);
-    routeIds.push(response.body.id);
-    return response.body;
+    routeIds.push(response.body.data.id);
+    return response.body.data;
   }
 
   beforeAll(async () => {
@@ -93,7 +93,7 @@ describe('Routes API', () => {
         .get('/routes')
         .expect(200);
 
-      expect(response.body).toContainEqual({
+      expect(response.body.data).toContainEqual({
         id: route.id,
         name: route.name,
         pointCount: 3,
@@ -110,9 +110,9 @@ describe('Routes API', () => {
         .expect(200);
 
       expect(
-        response.body.points.map((p: { sequence: number }) => p.sequence),
+        response.body.data.points.map((p: { sequence: number }) => p.sequence),
       ).toEqual([0, 1, 2]);
-      expect(response.body.duties).toEqual([]);
+      expect(response.body.data.duties).toEqual([]);
     });
 
     it('returns 404 for a route that does not exist', async () => {
@@ -131,8 +131,8 @@ describe('Routes API', () => {
         .send({ name: 'Renamed route' })
         .expect(200);
 
-      expect(response.body.name).toBe('Renamed route');
-      expect(response.body.points).toHaveLength(3);
+      expect(response.body.data.name).toBe('Renamed route');
+      expect(response.body.data.points).toHaveLength(3);
     });
 
     it('replaces the points when a new list is sent', async () => {
@@ -143,8 +143,8 @@ describe('Routes API', () => {
         .send({ points: [{ lat: 18.51, lng: -69.95, name: 'Only stop' }] })
         .expect(200);
 
-      expect(response.body.points).toHaveLength(1);
-      expect(response.body.points[0].sequence).toBe(0);
+      expect(response.body.data.points).toHaveLength(1);
+      expect(response.body.data.points[0].sequence).toBe(0);
     });
 
     it('returns 404 for a route that does not exist', async () => {

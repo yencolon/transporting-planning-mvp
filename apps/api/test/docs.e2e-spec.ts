@@ -61,4 +61,17 @@ describe('OpenAPI document', () => {
       'ErrorResponse',
     );
   });
+
+  it('documents every success body as an envelope', () => {
+    const document = buildOpenApiDocument(app);
+    const list = (document.paths['/routes'].get as any).responses['200'];
+    const detail = (document.paths['/routes/{id}'].get as any).responses['200'];
+
+    expect(list.content['application/json'].schema.properties.data.type).toBe(
+      'array',
+    );
+    expect(
+      detail.content['application/json'].schema.properties.data.$ref,
+    ).toContain('RouteDetailResponse');
+  });
 });

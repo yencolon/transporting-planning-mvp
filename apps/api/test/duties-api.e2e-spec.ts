@@ -64,7 +64,7 @@ describe('Duties API', () => {
         endAt: at('08'),
       }).expect(201);
 
-      expect(response.body).toMatchObject({
+      expect(response.body.data).toMatchObject({
         routeId,
         unitId,
         startAt: at('06'),
@@ -167,11 +167,11 @@ describe('Duties API', () => {
       }).expect(201);
 
       const response = await request(app.getHttpServer())
-        .patch(`/duties/${created.body.id}`)
+        .patch(`/duties/${created.body.data.id}`)
         .send({ endAt: at('09') })
         .expect(200);
 
-      expect(response.body.endAt).toBe(at('09'));
+      expect(response.body.data.endAt).toBe(at('09'));
     });
 
     it('returns 409 when the new window collides with another duty', async () => {
@@ -189,7 +189,7 @@ describe('Duties API', () => {
       }).expect(201);
 
       await request(app.getHttpServer())
-        .patch(`/duties/${later.body.id}`)
+        .patch(`/duties/${later.body.data.id}`)
         .send({ startAt: at('07'), endAt: at('09') })
         .expect(409);
     });
@@ -212,7 +212,7 @@ describe('Duties API', () => {
       }).expect(201);
 
       await request(app.getHttpServer())
-        .delete(`/duties/${created.body.id}`)
+        .delete(`/duties/${created.body.data.id}`)
         .expect(204);
 
       expect(await prisma.duty.count({ where: { routeId } })).toBe(0);
@@ -231,8 +231,8 @@ describe('Duties API', () => {
         .get('/units')
         .expect(200);
 
-      expect(response.body.length).toBeGreaterThan(0);
-      expect(response.body[0]).toEqual({
+      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(response.body.data[0]).toEqual({
         id: expect.any(String),
         name: expect.any(String),
       });

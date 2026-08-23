@@ -8,28 +8,22 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBody,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { ErrorResponse } from '../../infrastructure/http/error.response';
-import { toBodySchema } from '../../infrastructure/http/zod-json-schema';
-import { ZodValidationPipe } from '../../infrastructure/http/zod-validation.pipe';
-import { AssignDuty } from './application/assign-duty';
-import { DeleteDuty } from './application/delete-duty';
-import { RescheduleDuty } from './application/reschedule-duty';
+import { ApiBody, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import {
   AssignDutyBody,
   RescheduleDutyBody,
   assignDutySchema,
   rescheduleDutySchema,
-} from './dto/duty.schema';
+} from '@repo/shared';
+import {
+  ApiEnvelopeResponse,
+  ApiErrorResponse,
+} from '../../infrastructure/http/api-envelope.decorator';
+import { toBodySchema } from '../../infrastructure/http/zod-json-schema';
+import { ZodValidationPipe } from '../../infrastructure/http/zod-validation.pipe';
+import { AssignDuty } from './application/assign-duty';
+import { DeleteDuty } from './application/delete-duty';
+import { RescheduleDuty } from './application/reschedule-duty';
 import { DutyResponse, toDutyResponse } from './duty.response';
 
 @ApiTags('duties')
@@ -43,19 +37,10 @@ export class DutiesController {
 
   @Post()
   @ApiBody({ schema: toBodySchema(assignDutySchema) })
-  @ApiCreatedResponse({ type: DutyResponse })
-  @ApiBadRequestResponse({
-    description: 'Invalid time window or request body',
-    type: ErrorResponse,
-  })
-  @ApiNotFoundResponse({
-    description: 'Route or unit not found',
-    type: ErrorResponse,
-  })
-  @ApiConflictResponse({
-    description: 'Unit already has an overlapping duty',
-    type: ErrorResponse,
-  })
+  @ApiEnvelopeResponse(DutyResponse, { status: 201 })
+  @ApiErrorResponse(400, 'Invalid time window or request body')
+  @ApiErrorResponse(404, 'Route or unit not found')
+  @ApiErrorResponse(409, 'Unit already has an overlapping duty')
   async assign(
     @Body(new ZodValidationPipe(assignDutySchema)) body: AssignDutyBody,
   ): Promise<DutyResponse> {
@@ -64,19 +49,10 @@ export class DutiesController {
 
   @Patch(':id')
   @ApiBody({ schema: toBodySchema(rescheduleDutySchema) })
-  @ApiOkResponse({ type: DutyResponse })
-  @ApiBadRequestResponse({
-    description: 'Invalid time window or request body',
-    type: ErrorResponse,
-  })
-  @ApiNotFoundResponse({
-    description: 'Duty or unit not found',
-    type: ErrorResponse,
-  })
-  @ApiConflictResponse({
-    description: 'Unit already has an overlapping duty',
-    type: ErrorResponse,
-  })
+  @ApiEnvelopeResponse(DutyResponse, { status: 200 })
+  @ApiErrorResponse(400, 'Invalid time window or request body')
+  @ApiErrorResponse(404, 'Duty or unit not found')
+  @ApiErrorResponse(409, 'Unit already has an overlapping duty')
   async reschedule(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(rescheduleDutySchema)) body: RescheduleDutyBody,
@@ -86,8 +62,8 @@ export class DutiesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse()
-  @ApiNotFoundResponse({ description: 'Duty not found', type: ErrorResponse })
+  @ApiNoContentResponse({ description: 'Deleted; no body' })
+  @ApiErrorResponse(404, 'Duty not found')
   remove(@Param('id') id: string): Promise<void> {
     return this.deleteDuty.execute(id);
   }

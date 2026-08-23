@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  RouteDetailDto,
+  RouteDto,
+  RoutePointDto,
+  RouteSummaryDto,
+} from '@repo/shared';
 import { DutyResponse } from '../duties/duty.response';
 
-export class RoutePointResponse {
+export class RoutePointResponse implements RoutePointDto {
   @ApiProperty({ example: 0 })
   sequence!: number;
 
@@ -20,7 +26,7 @@ export class RoutePointResponse {
   name!: string | null;
 }
 
-export class RouteResponse {
+export class RouteResponse implements RouteDto {
   @ApiProperty({ example: '5990298d-ded6-4c71-bafc-9bc9665db672' })
   id!: string;
 
@@ -31,12 +37,15 @@ export class RouteResponse {
   points!: RoutePointResponse[];
 }
 
-export class RouteDetailResponse extends RouteResponse {
+export class RouteDetailResponse
+  extends RouteResponse
+  implements RouteDetailDto
+{
   @ApiProperty({ type: [DutyResponse] })
   duties!: DutyResponse[];
 }
 
-export class RouteSummaryResponse {
+export class RouteSummaryResponse implements RouteSummaryDto {
   @ApiProperty({ example: '5990298d-ded6-4c71-bafc-9bc9665db672' })
   id!: string;
 
