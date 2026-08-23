@@ -43,8 +43,18 @@ describe('Concurrent duty assignment', () => {
 
   it('lets exactly one of two simultaneous identical assignments through', async () => {
     const results = await Promise.allSettled([
-      assignDuty.execute({ routeId, unitId, startAt: at('06'), endAt: at('08') }),
-      assignDuty.execute({ routeId, unitId, startAt: at('06'), endAt: at('08') }),
+      assignDuty.execute({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }),
+      assignDuty.execute({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }),
     ]);
 
     const accepted = results.filter((r) => r.status === 'fulfilled');
@@ -74,7 +84,8 @@ describe('Concurrent duty assignment', () => {
     const refused = results.filter((r) => r.status === 'rejected');
     expect(
       refused.every(
-        (r) => (r as PromiseRejectedResult).reason instanceof OverlappingDutyError,
+        (r) =>
+          (r as PromiseRejectedResult).reason instanceof OverlappingDutyError,
       ),
     ).toBe(true);
     expect(await prisma.duty.count({ where: { unitId } })).toBe(1);
@@ -82,9 +93,24 @@ describe('Concurrent duty assignment', () => {
 
   it('allows simultaneous assignments that do not overlap', async () => {
     const results = await Promise.allSettled([
-      assignDuty.execute({ routeId, unitId, startAt: at('06'), endAt: at('08') }),
-      assignDuty.execute({ routeId, unitId, startAt: at('08'), endAt: at('10') }),
-      assignDuty.execute({ routeId, unitId, startAt: at('10'), endAt: at('12') }),
+      assignDuty.execute({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }),
+      assignDuty.execute({
+        routeId,
+        unitId,
+        startAt: at('08'),
+        endAt: at('10'),
+      }),
+      assignDuty.execute({
+        routeId,
+        unitId,
+        startAt: at('10'),
+        endAt: at('12'),
+      }),
     ]);
 
     expect(results.every((r) => r.status === 'fulfilled')).toBe(true);

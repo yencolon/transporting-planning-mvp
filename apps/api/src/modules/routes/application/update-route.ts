@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { RouteNotFoundError } from '../domain/errors';
-import { PointInput, Route, toOrderedPoints, toRouteName } from '../domain/route';
+import {
+  PointInput,
+  Route,
+  toOrderedPoints,
+  toRouteName,
+} from '../domain/route';
 import { RouteRepository } from '../domain/route.repository';
 
 export interface UpdateRouteInput {

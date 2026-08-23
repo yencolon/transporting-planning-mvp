@@ -63,6 +63,8 @@ Every port is bound to an implementation in one place, `src/infrastructure/persi
 - Schemas guard shape and types only. Business rules — coordinate ranges, blank names, window ordering — stay in the domain and reach HTTP through the filter.
 - `DomainExceptionFilter` (`infrastructure/http/`) maps domain errors to status codes: not-found → 404, invalid → 400, overlap / route-still-has-duties → 409. Add a new domain error to its map or it surfaces as a 500.
 - `configureApp()` in `src/app.setup.ts` is the one place global filters/pipes are registered; `main.ts` and every e2e spec call it, so tests exercise the same stack as production.
+- OpenAPI docs are served at `/docs`. The document is built by `buildOpenApiDocument()` (`infrastructure/http/openapi.ts`), shared by `main.ts` and `test/docs.e2e-spec.ts` — a schema the generator cannot represent then fails a test instead of killing bootstrap.
+- Request bodies are derived from the Zod schemas via `toBodySchema`, so docs cannot drift from validation. Responses are hand-written classes in `<feature>/*.response.ts`; every handler declares its return type so TypeScript catches drift between them and what a use case returns.
 
 ## Rules
 
@@ -82,4 +84,4 @@ Vitest, configured in `vitest.config.mts` with `unplugin-swc` (needed for `emitD
 
 Test the application layer directly with in-memory fakes of the repository interfaces. Keep tests short: one behaviour per test, no restating the implementation.
 
-Anything that depends on Postgres semantics belongs in `test/*.e2e-spec.ts`, not in a unit test with a fake: the EXCLUDE constraint, transaction behaviour in `update`, and concurrency. An in-memory fake cannot prove any of them. Each e2e spec creates its own route and unit and deletes them afterwards — the seeded rows must survive a test run untouched.
+Anything that depends on Postgres semantics belongs in `test/*.e2e-spec.ts`, not in a unit test with a fake: the EXCLUDE constraint, transaction behaviour in `update`, and concurrency. An in-memory fake cannot prove any of them. Each e2e spec creates its own route **and its own units** and deletes them afterwards — the seeded rows must survive a test run untouched. Never select an existing row as a fixture (`findFirst`, `findMany({ take })`): spec files run in parallel, so another spec's transient rows can be picked up and deleted mid-test. That failure looks like a random 404.

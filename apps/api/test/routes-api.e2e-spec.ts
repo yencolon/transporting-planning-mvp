@@ -8,6 +8,7 @@ import { PrismaService } from '../src/infrastructure/prisma/prisma.service';
 describe('Routes API', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let unitId: string;
   const routeIds: string[] = [];
 
   const newRoutePayload = () => ({
@@ -36,11 +37,18 @@ describe('Routes API', () => {
     app = configureApp(moduleFixture.createNestApplication());
     await app.init();
     prisma = app.get(PrismaService);
+
+    // Own fixtures only: other specs create and delete units in parallel.
+    const unit = await prisma.unit.create({
+      data: { name: `routes-api-${Date.now()}` },
+    });
+    unitId = unit.id;
   });
 
   afterAll(async () => {
     await prisma.duty.deleteMany({ where: { routeId: { in: routeIds } } });
     await prisma.route.deleteMany({ where: { id: { in: routeIds } } });
+    await prisma.unit.delete({ where: { id: unitId } });
     await app.close();
   });
 
@@ -49,9 +57,9 @@ describe('Routes API', () => {
       const route = await createRoute();
 
       expect(route.id).toEqual(expect.any(String));
-      expect(route.points.map((p: { sequence: number }) => p.sequence)).toEqual([
-        0, 1, 2,
-      ]);
+      expect(route.points.map((p: { sequence: number }) => p.sequence)).toEqual(
+        [0, 1, 2],
+      );
       expect(route.points[1].name).toBeNull();
     });
 
@@ -155,20 +163,17 @@ describe('Routes API', () => {
         .delete(`/routes/${route.id}`)
         .expect(204);
 
-      await request(app.getHttpServer())
-        .get(`/routes/${route.id}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/routes/${route.id}`).expect(404);
     });
 
     it('refuses with 409 while duties are still assigned', async () => {
       const route = await createRoute();
-      const unit = await prisma.unit.findFirstOrThrow();
 
       await request(app.getHttpServer())
         .post('/duties')
         .send({
           routeId: route.id,
-          unitId: unit.id,
+          unitId,
           startAt: '2027-09-01T06:00:00.000Z',
           endAt: '2027-09-01T08:00:00.000Z',
         })

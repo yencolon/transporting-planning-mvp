@@ -1,11 +1,21 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Duty } from './domain/duty';
 
-export interface DutyResponse {
-  id: string;
-  routeId: string;
-  unitId: string;
-  startAt: Date;
-  endAt: Date;
+export class DutyResponse {
+  @ApiProperty({ example: '9deb812f-220e-4837-8189-e2ff85b9c7d4' })
+  id!: string;
+
+  @ApiProperty({ example: '5990298d-ded6-4c71-bafc-9bc9665db672' })
+  routeId!: string;
+
+  @ApiProperty({ example: '8771e27d-2e90-4fe1-8e30-73a942952168' })
+  unitId!: string;
+
+  @ApiProperty({ example: '2026-08-24T06:00:00.000Z' })
+  startAt!: Date;
+
+  @ApiProperty({ example: '2026-08-24T08:00:00.000Z' })
+  endAt!: Date;
 }
 
 /** The window is flattened at the HTTP boundary; the domain keeps it as a value object. */

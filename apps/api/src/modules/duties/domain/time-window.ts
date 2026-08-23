@@ -8,7 +8,9 @@ export class TimeWindow {
 
   static create(startAt: Date, endAt: Date): TimeWindow {
     if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
-      throw new InvalidTimeWindowError('A duty needs valid start and end dates.');
+      throw new InvalidTimeWindowError(
+        'A duty needs valid start and end dates.',
+      );
     }
     if (endAt <= startAt) {
       throw new InvalidTimeWindowError('A duty must end after it starts.');

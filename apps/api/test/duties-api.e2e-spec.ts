@@ -31,9 +31,15 @@ describe('Duties API', () => {
     });
     routeId = route.id;
 
-    const units = await prisma.unit.findMany({ take: 2 });
-    unitId = units[0].id;
-    otherUnitId = units[1].id;
+    // Own fixtures only: other specs create and delete units in parallel.
+    const first = await prisma.unit.create({
+      data: { name: `duties-api-a-${Date.now()}` },
+    });
+    const second = await prisma.unit.create({
+      data: { name: `duties-api-b-${Date.now()}` },
+    });
+    unitId = first.id;
+    otherUnitId = second.id;
   });
 
   beforeEach(async () => {
@@ -43,6 +49,9 @@ describe('Duties API', () => {
   afterAll(async () => {
     await prisma.duty.deleteMany({ where: { routeId } });
     await prisma.route.delete({ where: { id: routeId } });
+    await prisma.unit.deleteMany({
+      where: { id: { in: [unitId, otherUnitId] } },
+    });
     await app.close();
   });
 
@@ -64,9 +73,12 @@ describe('Duties API', () => {
     });
 
     it('returns 409 when the unit is already busy', async () => {
-      await assign({ routeId, unitId, startAt: at('06'), endAt: at('08') }).expect(
-        201,
-      );
+      await assign({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }).expect(201);
 
       await assign({
         routeId,
@@ -77,9 +89,12 @@ describe('Duties API', () => {
     });
 
     it('accepts a back-to-back window on the same unit', async () => {
-      await assign({ routeId, unitId, startAt: at('06'), endAt: at('08') }).expect(
-        201,
-      );
+      await assign({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }).expect(201);
 
       await assign({
         routeId,
@@ -90,9 +105,12 @@ describe('Duties API', () => {
     });
 
     it('accepts the same window on another unit', async () => {
-      await assign({ routeId, unitId, startAt: at('06'), endAt: at('08') }).expect(
-        201,
-      );
+      await assign({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }).expect(201);
 
       await assign({
         routeId,
@@ -157,9 +175,12 @@ describe('Duties API', () => {
     });
 
     it('returns 409 when the new window collides with another duty', async () => {
-      await assign({ routeId, unitId, startAt: at('06'), endAt: at('08') }).expect(
-        201,
-      );
+      await assign({
+        routeId,
+        unitId,
+        startAt: at('06'),
+        endAt: at('08'),
+      }).expect(201);
       const later = await assign({
         routeId,
         unitId,

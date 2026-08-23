@@ -69,9 +69,9 @@ describe('Route persistence', () => {
     });
 
     expect(updated.points.map((point) => point.sequence)).toEqual([0]);
-    expect(await prisma.routePoint.count({ where: { routeId: route.id } })).toBe(
-      1,
-    );
+    expect(
+      await prisma.routePoint.count({ where: { routeId: route.id } }),
+    ).toBe(1);
   });
 
   it('clears the points when an empty list is sent', async () => {
@@ -81,8 +81,8 @@ describe('Route persistence', () => {
     const updated = await updateRoute.execute(route.id, { points: [] });
 
     expect(updated.points).toEqual([]);
-    expect(await prisma.routePoint.count({ where: { routeId: route.id } })).toBe(
-      0,
-    );
+    expect(
+      await prisma.routePoint.count({ where: { routeId: route.id } }),
+    ).toBe(0);
   });
 });

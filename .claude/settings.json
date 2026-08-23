@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(pnpm --filter=api exec vitest run test/docs.e2e-spec.ts 2>&1)",
+      "Bash(docker compose *)",
+      "Bash(./node_modules/.bin/prettier --write \"test/duties-api.e2e-spec.ts\")",
+      "Bash(./node_modules/.bin/prettier --check \"src/**/*.ts\" \"test/**/*.ts\")"
+    ]
+  }
+}
