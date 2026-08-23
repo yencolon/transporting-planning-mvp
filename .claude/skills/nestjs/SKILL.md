@@ -39,6 +39,9 @@ providers: [{ provide: THING_REPOSITORY, useClass: PrismaThingRepository }]
 
 ## Tests
 
-Vitest is the project's test runner (see DECISIONS.md). The Nest scaffold still ships Jest config in `apps/api/package.json` — do not assume it has been migrated; check before writing tests.
+Vitest, configured in `vitest.config.mts` with `unplugin-swc` (needed for `emitDecoratorMetadata`, which Nest DI relies on). Globals are enabled — no `import { describe, it }` needed.
+
+- `pnpm --filter=api test` — unit tests in `src/`
+- `pnpm --filter=api test:e2e` — `test/**/*.e2e-spec.ts`
 
 Test the application layer directly with in-memory fakes of the repository interfaces. Keep tests short: one behaviour per test, no restating the implementation.

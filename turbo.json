@@ -17,6 +17,11 @@
       "dependsOn": [
         "^lint"
       ]
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ]
     }
   }
 }

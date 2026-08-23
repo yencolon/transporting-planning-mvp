@@ -6,6 +6,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": ["vitest/globals", "node"],
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
