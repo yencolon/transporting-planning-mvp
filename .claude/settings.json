@@ -4,7 +4,9 @@
       "PowerShell(pnpm --filter=api exec vitest run test/docs.e2e-spec.ts 2>&1)",
       "Bash(docker compose *)",
       "Bash(./node_modules/.bin/prettier --write \"test/duties-api.e2e-spec.ts\")",
-      "Bash(./node_modules/.bin/prettier --check \"src/**/*.ts\" \"test/**/*.ts\")"
+      "Bash(./node_modules/.bin/prettier --check \"src/**/*.ts\" \"test/**/*.ts\")",
+      "Bash(git commit *)",
+      "PowerShell(Move-Item apps\\\\web\\\\src\\\\features\\\\routes\\\\RoutesListPage.tsx, apps\\\\web\\\\src\\\\features\\\\routes\\\\RouteDetailPage.tsx, apps\\\\web\\\\src\\\\features\\\\routes\\\\RouteMap.tsx apps\\\\web\\\\src\\\\routes\\\\routes\\\\; Remove-Item apps\\\\web\\\\src\\\\features -Recurse -Force -Confirm:$false; Remove-Item apps\\\\web\\\\src\\\\api\\\\endpoints.ts, apps\\\\web\\\\src\\\\test\\\\render.tsx -Force -Confirm:$false; Get-ChildItem -Recurse apps\\\\web\\\\src -File | ForEach-Object { $_.FullName.Replace\\(\\(Get-Location\\).Path + '\\\\apps\\\\web\\\\', ''\\) })"
     ]
   }
 }

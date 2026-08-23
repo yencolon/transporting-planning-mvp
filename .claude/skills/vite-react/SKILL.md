@@ -9,13 +9,27 @@ Vite 8 + React 19, TypeScript, ESM. Entry `src/main.tsx`, config `vite.config.ts
 
 ## Layers
 
+`src/routes/` mirrors the URL tree: one folder per URL segment, holding the views for that segment and nothing else.
+
 ```
 src/
-  api/       client.ts (fetch + envelope/error handling), endpoints.ts (typed calls)
-  features/<feature>/
-    ui/      components and hooks
-  test/      vitest setup
+  api/
+    client.ts     fetch + envelope unwrapping + ApiError
+    routes.ts     one file per endpoint group
+    duties.ts
+    units.ts
+  components/     shared presentational pieces (StatusMessage)
+  routes/
+    routes/       -> /routes and /routes/:id
+      hooks.ts    TanStack Query hooks + query keys
+      RoutesListPage.tsx
+      RouteDetailPage.tsx
+      RouteMap.tsx
+    duties/       -> /duties, when it exists
+  App.tsx         route table
 ```
+
+A new endpoint group gets its own file under `api/`; do not collect them into a single module. A new URL segment gets its own folder under `routes/`.
 
 Components consume a feature through a hook, never a `fetch` call inline — swapping the data source must not touch a component.
 
@@ -31,9 +45,15 @@ Components consume a feature through a hook, never a `fetch` call inline — swa
 
 TanStack Query. Mutations must invalidate the queries they affect — the spec requires CRUD to show up in the list and detail views, and that invalidation is what makes it happen.
 
+## Styling
+
+Tailwind 4 via `@tailwindcss/vite`; `src/index.css` is just `@import 'tailwindcss'` plus body defaults. No config file, no hand-written component CSS.
+
 ## Map
 
-`react-leaflet` + OpenStreetMap tiles, no API key. Route points render as ordered markers plus a polyline. Leaflet's CSS must be imported or the map renders blank.
+`react-leaflet` + OpenStreetMap tiles, no API key. Route points render as ordered markers plus a polyline. Leaflet's CSS must be imported or the map renders blank, and the container needs an explicit height. Default marker images 404 under a bundler, so markers use `L.divIcon` with Tailwind classes.
+
+`RouteMap` is mocked in component tests — Leaflet needs real layout measurements that jsdom does not provide.
 
 ## Rules
 
@@ -43,8 +63,8 @@ TanStack Query. Mutations must invalidate the queries they affect — the spec r
 
 ## Tests
 
-Vitest + Testing Library in jsdom (`vitest.config.ts`, setup in `src/test/setup.ts`), globals enabled.
+**Do not write new frontend tests unless asked.** The only spec that lives here is `src/api/client.test.ts`, covering envelope unwrapping and `ApiError`. Component tests were deliberately removed; the API keeps its full suite.
 
-- `pnpm --filter=web test`
-- Test the api layer as plain functions with `vi.stubGlobal('fetch', ...)`.
-- Component tests only where behaviour is non-trivial; assert what the user sees, not implementation details. Keep them short.
+Vitest + Testing Library in jsdom stay installed (`vitest.config.ts`, setup in `src/test/setup.ts`, globals enabled) so specs can come back without re-wiring. Run with `pnpm --filter=web test`.
+
+If tests are reinstated: test the api layer as plain functions with `vi.stubGlobal('fetch', ...)`, and mock `RouteMap` — Leaflet needs layout measurements jsdom does not provide.
