@@ -1,7 +1,14 @@
 import type { RoutePointDto } from '@repo/shared';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet';
+import {
+  MapContainer,
+  Marker,
+  Polyline,
+  Popup,
+  TileLayer,
+  useMapEvents,
+} from 'react-leaflet';
 
 // Leaflet's default marker images resolve to broken URLs under a bundler,
 // so the marker is a styled div instead.
@@ -13,7 +20,20 @@ const markerIcon = L.divIcon({
 
 const SANTO_DOMINGO: [number, number] = [18.4861, -69.9312];
 
-export function RouteMap({ points }: { points: RoutePointDto[] }) {
+interface RouteMapProps {
+  points: RoutePointDto[];
+  /** When set, clicking the map reports the coordinates. */
+  onPick?: (lat: number, lng: number) => void;
+}
+
+function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click: (event) => onPick(event.latlng.lat, event.latlng.lng),
+  });
+  return null;
+}
+
+export function RouteMap({ points, onPick }: RouteMapProps) {
   const positions = points.map(
     (point) => [point.lat, point.lng] as [number, number],
   );
@@ -31,6 +51,7 @@ export function RouteMap({ points }: { points: RoutePointDto[] }) {
         attribution="&copy; OpenStreetMap"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {onPick && <ClickHandler onPick={onPick} />}
       <Polyline positions={positions} />
       {points.map((point) => (
         <Marker

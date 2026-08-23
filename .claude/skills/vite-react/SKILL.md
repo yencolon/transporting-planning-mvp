@@ -20,10 +20,12 @@ src/
     units.ts
   components/     shared presentational pieces (StatusMessage)
   routes/
-    routes/       -> /routes and /routes/:id
-      hooks.ts    TanStack Query hooks + query keys
+    routes/       -> /routes, /routes/new, /routes/:id, /routes/:id/edit
+      hooks.ts    TanStack Query hooks (queries + mutations) and query keys
       RoutesListPage.tsx
       RouteDetailPage.tsx
+      RouteFormPage.tsx    create and edit share one component
+      AssignDutyForm.tsx
       RouteMap.tsx
     duties/       -> /duties, when it exists
   App.tsx         route table
@@ -38,6 +40,7 @@ Components consume a feature through a hook, never a `fetch` call inline — swa
 - Types and request schemas come from `@repo/shared`. Never redeclare an API shape locally; the API's response classes `implements` those same interfaces, so a mismatch is a compile error on one side or the other.
 - `apiRequest` unwraps the `{ data }` envelope and throws `ApiError` on failure. Components and hooks see plain payloads.
 - **Branch on `ApiError.code`, never on the status.** `OverlappingDutyError` and `RouteHasDutiesError` are both 409 and mean completely different things to the user.
+- User-facing copy lives in `api/error-messages.ts`, keyed by `code`. Add a new domain error there or the raw English message from the API leaks into the UI.
 - `ApiError.issues` carries per-field schema problems (`{ path, message }`) for form errors.
 - Base URL comes from `VITE_API_URL` (see `.env.example`), defaulting to `http://localhost:3000`.
 

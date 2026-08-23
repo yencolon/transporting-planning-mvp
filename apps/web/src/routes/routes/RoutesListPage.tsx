@@ -16,10 +16,18 @@ export function RoutesListPage() {
   return (
     <section>
       <header className="mb-6 flex items-end justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Rutas</h1>
-        <span className="text-sm text-slate-500">
-          {routes.length} {routes.length === 1 ? 'ruta' : 'rutas'}
-        </span>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Rutas</h1>
+          <span className="text-sm text-slate-500">
+            {routes.length} {routes.length === 1 ? 'ruta' : 'rutas'}
+          </span>
+        </div>
+        <Link
+          to="/routes/new"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+        >
+          Nueva ruta
+        </Link>
       </header>
 
       {routes.length === 0 ? (

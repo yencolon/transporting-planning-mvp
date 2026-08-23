@@ -1,4 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CreateRouteBody, UpdateRouteBody } from '@repo/shared';
+import { dutiesApi } from '../../api/duties';
 import { routesApi } from '../../api/routes';
 import { unitsApi } from '../../api/units';
 
@@ -24,4 +26,63 @@ export function useRouteDetail(id: string) {
 
 export function useUnits() {
   return useQuery({ queryKey: unitKeys.all, queryFn: unitsApi.list });
+}
+
+export function useCreateRoute() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateRouteBody) => routesApi.create(body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: routeKeys.all }),
+  });
+}
+
+export function useUpdateRoute(id: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateRouteBody) => routesApi.update(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: routeKeys.all });
+      queryClient.invalidateQueries({ queryKey: routeKeys.detail(id) });
+    },
+  });
+}
+
+export function useDeleteRoute() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => routesApi.remove(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: routeKeys.all }),
+  });
+}
+
+interface AssignDutyInput {
+  routeId: string;
+  unitId: string;
+  startAt: string;
+  endAt: string;
+}
+
+export function useAssignDuty() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: AssignDutyInput) => dutiesApi.assign(body),
+    onSuccess: (_duty, { routeId }) =>
+      queryClient.invalidateQueries({ queryKey: routeKeys.detail(routeId) }),
+  });
+}
+
+export function useDeleteDuty(routeId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => dutiesApi.remove(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: routeKeys.detail(routeId) }),
+  });
 }
