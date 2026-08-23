@@ -22,6 +22,16 @@ src/<feature>/
 
 Dependency direction is inward only: interface → application → domain. Infrastructure implements domain interfaces and is injected; nothing in `domain/` or `application/` may import from `infrastructure/`, `@nestjs/*` (beyond `@Injectable`), or Express types.
 
+## Data layer
+
+Prisma 7 + Postgres. Schema in `apps/api/prisma/schema.prisma`, connection URL read from `.env` through `prisma.config.ts` (CLI) and `ConfigService` (runtime).
+
+- `PrismaService` (`src/infrastructure/prisma/`) extends the generated client and is provided by `PrismaModule`; import that module in a feature module to inject it.
+- Prisma 7 has no Rust engine — the client needs a driver adapter (`@prisma/adapter-pg`). It is wired in `PrismaService`, nowhere else.
+- The generated client lands in `src/generated/prisma` and is gitignored; `postinstall` regenerates it.
+- Only `infrastructure/` may import from `src/generated/prisma`. A `domain/` or `application/` file importing Prisma types is a layering break — map to domain types in the repository implementation.
+- `pnpm db:up` (root) starts Postgres in Docker; `pnpm --filter=api db:migrate` applies migrations.
+
 ## Wiring
 
 Bind interfaces to implementations in the feature module with a token provider, so the implementation can be swapped without touching the use case:

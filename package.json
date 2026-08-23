@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
   },
   "keywords": [],
   "author": "",
