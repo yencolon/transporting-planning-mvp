@@ -164,9 +164,10 @@ POST   /routes            GET    /duties?unitId=&from=&to=
 GET    /routes/:id        PATCH  /duties/:id
 PATCH  /routes/:id        DELETE /duties/:id
 DELETE /routes/:id
-                          GET    /units
-                          POST   /units
-                          DELETE /units/:id
+
+GET    /units
+POST   /units
+DELETE /units/:id
 ```
 
 ## Qué dejé fuera a propósito
