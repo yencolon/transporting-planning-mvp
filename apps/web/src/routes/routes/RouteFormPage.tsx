@@ -31,17 +31,21 @@ const toDraft = (point: RoutePointDto): DraftPoint => ({
   name: point.name ?? "",
 });
 
-/** Only fully filled coordinates are previewed on the map. */
+const isFilled = (point: DraftPoint) => point.lat !== "" && point.lng !== "";
+
+/** Solo se previsualizan las filas rellenas, numeradas como se guardarán. */
 const toPreview = (points: DraftPoint[]): RoutePointDto[] =>
   points
+    .filter(isFilled)
     .map((point, index) => ({
       sequence: index,
       lat: Number(point.lat),
       lng: Number(point.lng),
       name: point.name.trim() || null,
     }))
-    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng))
-    .filter((point) => point.lat !== 0 || point.lng !== 0);
+    .filter(
+      (point) => Number.isFinite(point.lat) && Number.isFinite(point.lng),
+    );
 
 export function RouteFormPage() {
   const { id } = useParams();
@@ -90,13 +94,31 @@ export function RouteFormPage() {
   const addPoint = (lat = "", lng = "") =>
     setPoints((current) => [...current, newPoint(lat, lng)]);
 
+  /**
+   * El formulario arranca con una fila vacía para poder teclear coordenadas.
+   * Un clic en el mapa la rellena en vez de añadir otra debajo; solo cuando no
+   * queda ninguna vacía crea una nueva.
+   */
+  const pickPoint = (lat: string, lng: string) =>
+    setPoints((current) => {
+      const blank = current.findIndex(
+        (point) => point.lat === "" && point.lng === "",
+      );
+
+      return blank === -1
+        ? [...current, newPoint(lat, lng)]
+        : current.map((point, index) =>
+            index === blank ? { ...point, lat, lng } : point,
+          );
+    });
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const body = {
       name,
       points: points
-        .filter((point) => point.lat !== "" && point.lng !== "")
+        .filter(isFilled)
         .map((point) => ({
           lat: Number(point.lat),
           lng: Number(point.lng),
@@ -150,7 +172,7 @@ export function RouteFormPage() {
 
           <RouteMap
             points={toPreview(points)}
-            onPick={(lat, lng) => addPoint(lat.toFixed(6), lng.toFixed(6))}
+            onPick={(lat, lng) => pickPoint(lat.toFixed(6), lng.toFixed(6))}
           />
 
           <ul className="mt-3 grid gap-2">

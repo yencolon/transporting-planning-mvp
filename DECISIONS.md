@@ -1,68 +1,49 @@
 # Bitácora de decisiones
 
-## Por qué PostgreSQL y no MongoDB
+## Decisiones arquitectónicas y de diseño
 
-El corazón del ejercicio no es guardar duties: es garantizar que **una unidad
-nunca tenga dos ventanas solapadas**, incluso con peticiones simultáneas. Eso es
-una restricción de integridad sobre rangos de tiempo, y Postgres la expresa de
-forma declarativa:
+**1)** Decidí usar un monorepo por practicidad, de tal manera que tengo todo el
+código y a la IA trabajando sobre el mismo proyecto en todo momento. El efecto
+secundario que más me sirvió: el contrato vive en un solo sitio (`@repo/shared`),
+así que un cambio incompatible entre API y frontend rompe la compilación en vez
+de aparecer en runtime.
+
+**2)** En cuanto a arquitectura, elegí implementar una arquitectura hexagonal (a
+menor escala), de tal forma que tengo las responsabilidades de dominio,
+aplicación e infraestructura separadas y no dependientes unas de otras. Las
+dependencias apuntan hacia dentro: el dominio no conoce ni Nest ni Prisma.
+
+**3)** Elegí Postgres en lugar de Mongo porque el corazón del ejercicio es que
+una unidad no tenga dos duties solapados, y eso es una restricción de integridad
+sobre rangos de tiempo. Postgres la declara y la impone él mismo en cada insert:
 
 ```sql
 EXCLUDE USING gist ("unitId" WITH =, tsrange("startAt", "endAt", '[)') WITH &&)
 ```
 
-El motor la impone en cada `INSERT`. No hay ventana entre comprobar y escribir,
-porque la comprobación _es_ la escritura.
+En Mongo no hay equivalente nativo: un índice único compara valores iguales, no
+intersección de rangos. Tendría que resolverlo a mano con transacciones o
+bloqueos, justo en el punto donde fallar en silencio significa mandar dos veces
+el mismo autobús. A cambio asumo menos flexibilidad de esquema y una migración
+por cada cambio de modelo, algo barato en un dominio tan estable.
 
-En MongoDB no existe equivalente: un índice único compara valores iguales, no
-intersección de rangos. Para sostener lo mismo habría que envolver cada
-asignación en una transacción con lectura previa y confiar en reintentos, o
-montar un esquema de bloqueo por unidad. Es decir, **implementar a mano lo que
-Postgres ya da**, en el único punto del sistema donde un fallo silencioso
-significa mandar dos veces el mismo autobús.
+**4)** Adicionalmente, implementé un poco de TDD para crear las features, de tal
+forma que el flujo fue test (casos de uso críticos) → implementación. Sacó
+defectos reales: un `execute` no-async cuya validación lanzaba de forma síncrona,
+y tests que tomaban filas ajenas como fixtures y fallaban de forma intermitente
+al correr en paralelo.
 
-A eso se suma que el dominio es relacional de forma natural: una ruta tiene
-puntos ordenados, un duty referencia una ruta y una unidad, y las claves foráneas
-con `RESTRICT` impiden borrar algo que todavía se usa.
+**5)** El conflicto no bloquea el envío. El timeline pinta el solapamiento en
+rojo, pero el botón sigue activo y el error solo aparece cuando el servidor lo
+rechaza: quien decide es el servidor, no el cliente, y así la regla se puede
+provocar en lugar de esconderse tras un botón deshabilitado.
 
-**Lo que asumo a cambio:** menos flexibilidad de esquema y una migración por cada
-cambio de modelo. En un MVP con un dominio tan estable, me pareció barato.
+**6)** La concurrencia se demuestra con un script (`pnpm race`) y no con un botón
+en la interfaz. Una UI que existe solo para demostrar no le sirve a ningún
+usuario.
 
-## Decisiones de arquitectura que tomé yo
-
-- **Monorepo con Turborepo y pnpm.** Es la primera decisión del proyecto y
-  condiciona el resto: API, frontend y un paquete `@repo/shared` en un solo
-  repositorio. Lo que gano es que el contrato vive en un único sitio —los
-  esquemas Zod validan en la API y tipan los formularios, y las clases de
-  respuesta de Swagger implementan esas mismas interfaces—, así que un cambio
-  incompatible **rompe la compilación en vez de llegar al runtime**. Para quien
-  revisa, además, es un clone y un `pnpm install`.
-- **Un único envelope para toda respuesta**: `{ data }` en éxito,
-  `{ error: { code, message, issues? } }` en fallo. La IA recomendó lo contrario
-  (cuerpos REST desnudos, unificando solo los errores). Lo rechacé: prefiero que
-  el frontend parsee una sola forma en todos los casos. El detonante fue una
-  auditoría que encontró **tres formas de error distintas** conviviendo.
-- **`error.code` como contrato**, no el estado HTTP. `OverlappingDutyError` y
-  `RouteHasDutiesError` son ambos 409 y significan cosas opuestas para el
-  usuario.
-- **Zod en lugar de class-validator**. Un esquema es a la vez validación y tipo,
-  no arrastra decoradores ni `reflect-metadata`, y el mismo esquema vive en
-  `@repo/shared` para API y formularios.
-- **`src/routes/` refleja el árbol de URLs** en el frontend, y `src/api/` tiene un
-  archivo por grupo de endpoints en lugar de un `endpoints.ts` único.
-- **Sin tests de componentes en el frontend**. La lógica que importa —
-  solapamiento, concurrencia, persistencia — está cubierta en la API. La UI se
-  movía demasiado rápido para que tests de vista se pagaran solos.
-- **El conflicto no bloquea el envío.** El timeline pinta el solapamiento en
-  rojo, pero el botón sigue activo y el error solo aparece cuando el servidor lo
-  rechaza. Quiero que la regla se pueda provocar, no esconder tras un botón
-  deshabilitado: quien decide es el servidor, no el cliente.
-- **Demostrar la concurrencia con un script** (`pnpm race`) y no con un botón en
-  la interfaz. Una UI que existe solo para demostrar no le sirve a ningún
-  usuario.
-- **TDD a partir de la capa de aplicación.** Sacó defectos reales: un `execute`
-  no-async cuya validación lanzaba de forma síncrona, y tests que tomaban filas
-  ajenas como fixtures y fallaban de forma intermitente al correr en paralelo.
+En cuanto a las decisiones que tomé yo y las que tomó la IA, fueron las
+siguientes.
 
 ## Dónde acepté lo que propuso la IA
 

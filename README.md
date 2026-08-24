@@ -93,15 +93,16 @@ empieza a las 08:00 no se solapan. La misma definición está en
 Con la API levantada:
 
 ```bash
-pnpm race        # 5 peticiones simultáneas
-pnpm race 20     # 20 peticiones simultáneas
+pnpm race                             # 5 peticiones contra localhost:3000
+pnpm race 20                          # 20 peticiones
+pnpm race 20 https://tu-api.com       # contra un despliegue
 ```
 
 El script crea una ruta y una unidad temporales, lanza N asignaciones a la vez
 con ventanas que se solapan todas entre sí, y comprueba cuántas quedaron:
 
 ```
-20 peticiones simultaneas · unidad RACE-… · ventanas que se solapan todas
+20 peticiones simultaneas · http://localhost:3000 · ventanas que se solapan todas
 
   creadas    1
   rechazadas 19  (OverlappingDutyError)
@@ -167,3 +168,52 @@ DELETE /routes/:id
                           POST   /units
                           DELETE /units/:id
 ```
+
+## Qué dejé fuera a propósito
+
+- **Autenticación.** No hay multi-tenancy ni roles en el enunciado: todo el que
+  entra planifica la misma flota. Meter login habría añadido sesiones, guards y
+  una tabla de usuarios sin cambiar nada del problema que se está evaluando.
+- **Tests de componentes en el frontend.** La lógica que puede romperse de
+  verdad —solapamiento, concurrencia, persistencia— está cubierta en la API con
+  93 tests. La interfaz cambió de forma varias veces; unos tests de vista se
+  habrían reescrito enteros en cada pasada sin haber atrapado nada.
+- **CRUD de duties completo en la interfaz.** La API sabe reprogramar
+  (`PATCH /duties/:id`, probado y documentado), pero la UI solo asigna y borra.
+  Preferí que el camino de asignar quedara sólido, con el timeline de conflictos,
+  antes que tener tres operaciones a medias.
+- **GraphQL.** El enunciado lo ofrecía como opcional. Con nueve endpoints y un
+  solo consumidor no aporta nada frente a REST, y sí complica el contrato
+  compartido que hoy verifica el compilador.
+- **Un botón para probar la concurrencia.** Existe la comprobación, pero como
+  script (`pnpm race`), no como interfaz. Una pantalla que solo sirve para
+  demostrar no le sirve a ningún usuario.
+
+## Qué haría con más tiempo
+
+Por orden de lo que más valor daría al producto:
+
+1. **Tiempo de traslado entre duties.** Hoy dos duties consecutivos son válidos
+   si no se solapan, aunque uno termine a 40 km de donde empieza el siguiente.
+   La regla realista es que tiene que caber el traslado entre el último punto de
+   una ruta y el primero de la otra. Es la que más se parece a la operación de
+   verdad, y además no cabe en la restricción `EXCLUDE`: esta sabe expresar "no
+   se solapan", pero no "sepáralos según la distancia". Viviría en la capa de
+   aplicación, o en un trigger si se quiere la misma garantía bajo concurrencia.
+2. **Reprogramar duties desde la interfaz**, apoyándose en el endpoint que ya
+   existe: arrastrar el bloque sobre el timeline sería la forma natural.
+3. **Zonas horarias explícitas.** Ahora se guarda `timestamp` sin zona y la UI
+   usa la del navegador. Funciona con una sola zona, pero la noche del cambio de
+   horario de verano una hora se repite y la regla de solapamiento deja de
+   significar lo que creemos.
+4. **Paginación y filtrado.** `GET /routes` y `GET /duties?unitId=` devuelven
+   todo sin límite; con una flota real hay que paginar, y buscar por nombre en
+   rutas y unidades deja de ser un lujo.
+5. **Mejor manejo de los puntos en el mapa**: reordenar arrastrando, ajustar el
+   zoom a los límites de la ruta, agrupar los puntos cercanos y buscar una
+   dirección para colocar un punto sin conocer sus coordenadas.
+6. **Integración continua.** Hay 98 tests y nada que los ejecute al hacer push.
+7. **Versión móvil.** La interfaz es responsive a grandes rasgos, pero el
+   timeline y la tira de puntos están pensados para pantalla ancha.
+8. **Autenticación**, en cuanto haya más de un operador y tenga sentido saber
+   quién reasignó un duty.

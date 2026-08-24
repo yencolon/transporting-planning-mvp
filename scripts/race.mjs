@@ -6,11 +6,20 @@
  * check and the INSERT another request can slip in. What holds the line is the
  * EXCLUDE constraint in Postgres. Run with the API up:
  *
- *   pnpm race        # 5 requests
- *   pnpm race 20     # 20 requests
+ *   pnpm race                          # 5 peticiones contra localhost:3000
+ *   pnpm race 20                       # 20 peticiones
+ *   pnpm race 20 https://mi-api.com    # contra un despliegue
+ *
+ * Los argumentos van por forma, no por posición, para no depender de la
+ * sintaxis de variables de entorno de cada shell (`VAR=x cmd` no existe en
+ * PowerShell). API_URL sigue funcionando si prefieres el entorno.
  */
-const BASE_URL = process.env.API_URL ?? 'http://localhost:3000';
-const ATTEMPTS = Number(process.argv[2] ?? 5);
+const args = process.argv.slice(2);
+const ATTEMPTS = Number(args.find((arg) => /^\d+$/.test(arg)) ?? 5);
+const BASE_URL =
+  args.find((arg) => /^https?:\/\//.test(arg)) ??
+  process.env.API_URL ??
+  'http://localhost:3000';
 
 const stamp = Date.now();
 
@@ -54,7 +63,7 @@ async function main() {
   }));
 
   console.log(
-    `\n${ATTEMPTS} peticiones simultaneas · unidad RACE-${stamp} · ventanas que se solapan todas\n`,
+    `\n${ATTEMPTS} peticiones simultaneas · ${BASE_URL} · ventanas que se solapan todas\n`,
   );
 
   const results = await Promise.all(
