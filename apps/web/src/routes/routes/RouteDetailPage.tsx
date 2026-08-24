@@ -7,9 +7,10 @@ import {
   TruckIcon,
 } from "../../components/icons";
 import { Empty, ErrorMessage, Loading } from "../../components/StatusMessage";
+import { AssignDutyForm } from "../../components/AssignDutyForm";
+import { RouteMap } from "../../components/RouteMap";
+import { RoutePointsStrip } from "../../components/RoutePointsStrip";
 import { useUnits } from "../units/hooks";
-import { AssignDutyForm } from "./AssignDutyForm";
-import { RouteMap } from "./RouteMap";
 import { useDeleteDuty, useDeleteRoute, useRouteDetail } from "./hooks";
 
 const timeFormat = new Intl.DateTimeFormat("es-DO", {
@@ -96,29 +97,12 @@ export function RouteDetailPage() {
 
       <RouteMap points={route.points} />
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-8">
         <section>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
             Puntos
           </h2>
-          <ol className="grid gap-2" data-testid="route-points">
-            {route.points.map((point) => (
-              <li
-                key={point.sequence}
-                className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
-              >
-                <span className="grid size-6 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 font-display text-[11px] font-semibold text-lime-300">
-                  {point.sequence + 1}
-                </span>
-                <span className="flex-1 text-sm font-medium">
-                  {point.name ?? "Sin nombre"}
-                </span>
-                <span className="text-xs tabular-nums text-zinc-500">
-                  {point.lat}, {point.lng}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <RoutePointsStrip points={route.points} />
         </section>
 
         <section>

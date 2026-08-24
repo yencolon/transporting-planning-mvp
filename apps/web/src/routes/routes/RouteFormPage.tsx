@@ -3,20 +3,27 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from "../../components/icons";
 import { ErrorMessage, Loading } from "../../components/StatusMessage";
-import { RouteMap } from "./RouteMap";
+import { RouteMap } from "../../components/RouteMap";
 import { useCreateRoute, useRouteDetail, useUpdateRoute } from "./hooks";
 
 interface DraftPoint {
+  id: number;
   lat: string;
   lng: string;
   name: string;
 }
 
-const emptyPoint: DraftPoint = { lat: "", lng: "", name: "" };
+let nextDraftId = 0;
+
+const newPoint = (lat = "", lng = ""): DraftPoint => ({
+  id: nextDraftId++,
+  lat,
+  lng,
+  name: "",
+});
 
 const toDraft = (point: RoutePointDto): DraftPoint => ({
-  lat: String(point.lat),
-  lng: String(point.lng),
+  ...newPoint(String(point.lat), String(point.lng)),
   name: point.name ?? "",
 });
 
@@ -43,7 +50,7 @@ export function RouteFormPage() {
   const mutation = isEdit ? update : create;
 
   const [name, setName] = useState("");
-  const [points, setPoints] = useState<DraftPoint[]>([emptyPoint]);
+  const [points, setPoints] = useState<DraftPoint[]>(() => [newPoint()]);
 
   useEffect(() => {
     if (isEdit && existing.data) {
@@ -51,7 +58,7 @@ export function RouteFormPage() {
       setPoints(
         existing.data.points.length
           ? existing.data.points.map(toDraft)
-          : [emptyPoint],
+          : [newPoint()],
       );
     }
   }, [isEdit, existing.data]);
@@ -70,10 +77,14 @@ export function RouteFormPage() {
     );
 
   const removePoint = (index: number) =>
-    setPoints((current) => current.filter((_, i) => i !== index));
+    setPoints((current) =>
+      current.length === 1
+        ? [newPoint()]
+        : current.filter((_, i) => i !== index),
+    );
 
   const addPoint = (lat = "", lng = "") =>
-    setPoints((current) => [...current, { lat, lng, name: "" }]);
+    setPoints((current) => [...current, newPoint(lat, lng)]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -141,7 +152,7 @@ export function RouteFormPage() {
           <ul className="mt-3 grid gap-2">
             {points.map((point, index) => (
               <li
-                key={index}
+                key={point.id}
                 className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2.5"
               >
                 <span className="grid size-6 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 font-display text-[11px] font-semibold text-lime-300">
@@ -176,9 +187,8 @@ export function RouteFormPage() {
                 <button
                   type="button"
                   onClick={() => removePoint(index)}
-                  disabled={points.length === 1}
                   aria-label="Quitar punto"
-                  className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500"
+                  className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400"
                 >
                   <TrashIcon className="size-4" />
                 </button>

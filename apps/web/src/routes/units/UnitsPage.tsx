@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PlusIcon, TrashIcon, TruckIcon } from "../../components/icons";
 import { Empty, ErrorMessage, Loading } from "../../components/StatusMessage";
+import { UnitDutiesList } from "../../components/UnitDutiesList";
 import { useCreateUnit, useDeleteUnit, useUnits } from "./hooks";
 
 export function UnitsPage() {
@@ -8,6 +9,7 @@ export function UnitsPage() {
   const createUnit = useCreateUnit();
   const deleteUnit = useDeleteUnit();
   const [name, setName] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,29 +70,51 @@ export function UnitsPage() {
       {units.length === 0 ? (
         <Empty>Todavía no hay unidades.</Empty>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {units.map((unit) => (
-            <li
-              key={unit.id}
-              className="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3.5"
-            >
-              <span className="flex items-center gap-3">
-                <span className="grid size-9 place-items-center rounded-lg bg-zinc-800 text-zinc-400">
-                  <TruckIcon />
-                </span>
-                <span className="font-medium">{unit.name}</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => deleteUnit.mutate(unit.id)}
-                disabled={deleteUnit.isPending}
-                aria-label="Eliminar unidad"
-                className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40"
+        <ul className="grid gap-3">
+          {units.map((unit) => {
+            const expanded = expandedId === unit.id;
+            return (
+              <li
+                key={unit.id}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3.5"
               >
-                <TrashIcon className="size-4" />
-              </button>
-            </li>
-          ))}
+                <div className="flex items-center justify-between gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(expanded ? null : unit.id)}
+                    aria-expanded={expanded}
+                    className="flex flex-1 items-center gap-3 text-left"
+                  >
+                    <span className="grid size-9 place-items-center rounded-lg bg-zinc-800 text-zinc-400">
+                      <TruckIcon />
+                    </span>
+                    <span className="font-medium">{unit.name}</span>
+                    <span
+                      aria-hidden
+                      className={`text-xs text-zinc-500 transition-transform ${expanded ? "rotate-90" : ""}`}
+                    >
+                      ▶
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteUnit.mutate(unit.id)}
+                    disabled={deleteUnit.isPending}
+                    aria-label="Eliminar unidad"
+                    className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40"
+                  >
+                    <TrashIcon className="size-4" />
+                  </button>
+                </div>
+
+                {expanded && (
+                  <div className="mt-3 border-t border-zinc-800 pt-3">
+                    <UnitDutiesList unitId={unit.id} />
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 

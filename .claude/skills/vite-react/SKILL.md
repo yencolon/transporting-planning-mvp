@@ -18,15 +18,15 @@ src/
     routes.ts     one file per endpoint group
     duties.ts
     units.ts
-  components/     shared presentational pieces (StatusMessage)
+  components/     shared presentational pieces (StatusMessage, RouteMap,
+                  AssignDutyForm, UnitDayTimeline)
   routes/
     routes/       -> /routes, /routes/new, /routes/:id, /routes/:id/edit
       hooks.ts    TanStack Query hooks (queries + mutations) and query keys
       RoutesListPage.tsx
       RouteDetailPage.tsx
       RouteFormPage.tsx    create and edit share one component
-      AssignDutyForm.tsx
-      RouteMap.tsx
+    units/        -> /units
     duties/       -> /duties, when it exists
   App.tsx         route table
 ```

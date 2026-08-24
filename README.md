@@ -5,17 +5,21 @@ ruta, una unidad y una ventana horaria con fin explícito. La regla central es
 que **una unidad no puede tener dos duties cuyas ventanas se solapen**, y esa
 regla se sostiene incluso bajo peticiones concurrentes.
 
+## Demo en vivo
+
+<https://web-gold-two-80.vercel.app/>
+
 ## Stack
 
-| Capa | Tecnología |
-| --- | --- |
-| Monorepo | Turborepo + pnpm |
-| Backend | NestJS 10 · TypeScript |
-| Base de datos | PostgreSQL 16 (Docker) · Prisma 7 |
-| Frontend | React 19 · Vite · Tailwind 4 · TanStack Query |
-| Mapa | react-leaflet + OpenStreetMap |
-| Validación | Zod, compartida entre API y frontend |
-| Tests | Vitest |
+| Capa          | Tecnología                                    |
+| ------------- | --------------------------------------------- |
+| Monorepo      | Turborepo + pnpm                              |
+| Backend       | NestJS 10 · TypeScript                        |
+| Base de datos | PostgreSQL 16 (Docker) · Prisma 7             |
+| Frontend      | React 19 · Vite · Tailwind 4 · TanStack Query |
+| Mapa          | react-leaflet + OpenStreetMap                 |
+| Validación    | Zod, compartida entre API y frontend          |
+| Tests         | Vitest                                        |
 
 ## Requisitos
 

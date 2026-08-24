@@ -15,7 +15,7 @@ import {
 const markerIcon = (sequence: number) =>
   L.divIcon({
     className: "",
-    html: `<div class="grid size-6 place-items-center rounded-full border-2 border-zinc-950 bg-lime-400 font-display text-[11px] font-bold text-zinc-950 shadow-lg shadow-lime-400/30">${sequence + 1}</div>`,
+    html: `<div class="grid size-5 place-items-center rounded-full border-2 border-zinc-950 bg-lime-400 font-display text-[11px] font-bold text-zinc-950 shadow-lg shadow-lime-400/30">${sequence + 1}</div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
@@ -49,7 +49,7 @@ export function RouteMap({ points, onPick }: RouteMapProps) {
     <MapContainer
       className="h-96 w-full overflow-hidden rounded-xl border border-zinc-800"
       center={positions[0] ?? CARACAS}
-      zoom={13}
+      zoom={15}
       bounds={bounds}
       scrollWheelZoom={false}
     >
@@ -60,7 +60,7 @@ export function RouteMap({ points, onPick }: RouteMapProps) {
       {onPick && <ClickHandler onPick={onPick} />}
       <Polyline
         positions={positions}
-        pathOptions={{ color: "#a3e635", weight: 3, opacity: 0.85 }}
+        pathOptions={{ color: "#a3e635", weight: 1, opacity: 0.85 }}
       />
       {points.map((point) => (
         <Marker

@@ -1,7 +1,7 @@
 import type { DutyDto } from "@repo/shared";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const HOUR_LABELS = [0, 3, 6, 9, 12, 15, 18, 21];
+const HOUR_LABELS = [0, 6, 12, 18];
 
 export interface Block {
   startAt: string;
@@ -16,7 +16,13 @@ interface UnitDayTimelineProps {
   /** The window being composed, if it is complete. */
   draft?: Block;
   conflicts: Block[];
+  /** Key that should render highlighted, and hover reporter. */
+  activeKey?: string | null;
+  onHover?: (key: string | null) => void;
 }
+
+/** Stable identity for a block, so hovering can link it to a row elsewhere. */
+const blockKey = (block: Block) => `${block.startAt}|${block.endAt}`;
 
 const clamp = (value: number) => Math.min(100, Math.max(0, value));
 
@@ -42,48 +48,65 @@ export function UnitDayTimeline({
   duties,
   draft,
   conflicts,
+  activeKey,
+  onHover,
 }: UnitDayTimelineProps) {
   const clashing = conflicts.length > 0;
   const conflictIds = new Set(conflicts.map((duty) => duty.startAt));
 
   return (
     <div className="grid gap-2">
-      <div className="relative h-14 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/60">
+      <div className="relative h-16 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/60">
         {HOUR_LABELS.map((hour) => (
           <div
             key={hour}
             className="absolute top-0 bottom-0 border-l border-zinc-800"
             style={{ left: `${(hour / 24) * 100}%` }}
           >
-            <span className="absolute top-0.5 left-1 text-[10px] text-zinc-600">
-              {String(hour).padStart(2, "0")}
+            <span className="absolute top-0.5 left-1 text-[10px] tabular-nums text-zinc-500">
+              {String(hour).padStart(2, "0")}:00
             </span>
           </div>
         ))}
 
-        {duties.map((duty) => (
-          <div
-            key={`${duty.startAt}-${duty.label}`}
-            title={`${duty.label} · ${hhmm(duty.startAt)}–${hhmm(duty.endAt)}`}
-            style={span(dayStart, duty.startAt, duty.endAt)}
-            className={[
-              "absolute top-6 h-3.5 rounded-sm",
-              conflictIds.has(duty.startAt) ? "bg-red-500" : "bg-zinc-600",
-            ].join(" ")}
-          />
-        ))}
+        {duties.map((duty) => {
+          const key = blockKey(duty);
+          const active = key === activeKey;
+          return (
+            <div
+              key={key}
+              title={`${duty.label} · ${hhmm(duty.startAt)}–${hhmm(duty.endAt)}`}
+              style={span(dayStart, duty.startAt, duty.endAt)}
+              onMouseEnter={() => onHover?.(key)}
+              onMouseLeave={() => onHover?.(null)}
+              className={[
+                "absolute top-6 flex h-4 items-center overflow-hidden rounded-sm px-1 transition",
+                conflictIds.has(duty.startAt) ? "bg-red-500" : "bg-zinc-600",
+                active ? "z-10 ring-2 ring-lime-300 brightness-150" : "",
+              ].join(" ")}
+            >
+              <span className="truncate text-[9px] tabular-nums text-zinc-200">
+                {hhmm(duty.startAt)}–{hhmm(duty.endAt)}
+              </span>
+            </div>
+          );
+        })}
 
         {draft && (
           <div
             title={`Nuevo · ${hhmm(draft.startAt)}–${hhmm(draft.endAt)}`}
             style={span(dayStart, draft.startAt, draft.endAt)}
             className={[
-              "absolute top-10 h-3.5 rounded-sm border",
+              "absolute top-11 flex h-4 items-center overflow-hidden rounded-sm border px-1",
               clashing
                 ? "border-red-300 bg-red-500"
                 : "border-lime-200 bg-lime-400",
             ].join(" ")}
-          />
+          >
+            <span className="truncate text-[9px] tabular-nums text-zinc-950">
+              {hhmm(draft.startAt)}–{hhmm(draft.endAt)}
+            </span>
+          </div>
         )}
       </div>
 
