@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PlusIcon, TrashIcon, TruckIcon } from "../../components/icons";
 import { Empty, ErrorMessage, Loading } from "../../components/StatusMessage";
 import { UnitDutiesList } from "../../components/UnitDutiesList";
-import { useCreateUnit, useDeleteUnit, useUnits } from "./hooks";
+import { useCreateUnit, useDeleteUnit, useUnits } from "../../queries/units";
 
 export function UnitsPage() {
   const { data: units, isPending, error } = useUnits();

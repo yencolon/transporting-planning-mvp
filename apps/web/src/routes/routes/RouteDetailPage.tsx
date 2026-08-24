@@ -10,8 +10,9 @@ import { Empty, ErrorMessage, Loading } from "../../components/StatusMessage";
 import { AssignDutyForm } from "../../components/AssignDutyForm";
 import { RouteMap } from "../../components/RouteMap";
 import { RoutePointsStrip } from "../../components/RoutePointsStrip";
-import { useUnits } from "../units/hooks";
-import { useDeleteDuty, useDeleteRoute, useRouteDetail } from "./hooks";
+import { useDeleteDuty } from "../../queries/duties";
+import { useDeleteRoute, useRouteDetail } from "../../queries/routes";
+import { useUnits } from "../../queries/units";
 
 const timeFormat = new Intl.DateTimeFormat("es-DO", {
   dateStyle: "medium",

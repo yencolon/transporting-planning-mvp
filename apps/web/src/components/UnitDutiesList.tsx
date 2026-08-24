@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { DutyDto } from "@repo/shared";
 import { Link } from "react-router-dom";
-import { useRoutes, useUnitDuties } from "../routes/routes/hooks";
+import { useUnitDuties } from "../queries/duties";
+import { useRoutes } from "../queries/routes";
 import { ErrorMessage, Loading } from "./StatusMessage";
 import { UnitDayTimeline, toBlock } from "./UnitDayTimeline";
 

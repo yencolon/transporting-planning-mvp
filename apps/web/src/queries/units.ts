@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { unitsApi } from '../../api/units';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { unitsApi } from "../api/units";
 
 export const unitKeys = {
-  all: ['units'] as const,
+  all: ["units"] as const,
 };
 
 export function useUnits() {

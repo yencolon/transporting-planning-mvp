@@ -4,7 +4,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from "../../components/icons";
 import { ErrorMessage, Loading } from "../../components/StatusMessage";
 import { RouteMap } from "../../components/RouteMap";
-import { useCreateRoute, useRouteDetail, useUpdateRoute } from "./hooks";
+import {
+  useCreateRoute,
+  useRouteDetail,
+  useUpdateRoute,
+} from "../../queries/routes";
 
 interface DraftPoint {
   id: number;

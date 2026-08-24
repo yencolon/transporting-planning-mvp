@@ -1,13 +1,10 @@
 import { useState } from "react";
-import { useUnits } from "../routes/units/hooks";
+import { useAssignDuty, useUnitDuties } from "../queries/duties";
+import { useRoutes } from "../queries/routes";
+import { useUnits } from "../queries/units";
 import { ErrorMessage } from "./StatusMessage";
 import { UnitDayTimeline, overlaps, toBlock } from "./UnitDayTimeline";
 import type { Block } from "./UnitDayTimeline";
-import {
-  useAssignDuty,
-  useRoutes,
-  useUnitDuties,
-} from "../routes/routes/hooks";
 
 /** datetime-local gives a local wall-clock string; the API wants an instant. */
 const toIso = (local: string) => new Date(local).toISOString();

@@ -20,9 +20,12 @@ src/
     units.ts
   components/     shared presentational pieces (StatusMessage, RouteMap,
                   AssignDutyForm, UnitDayTimeline)
+  queries/        TanStack Query hooks + query keys, one file per group
+    routes.ts     mirrors api/, so hooks never live inside a route folder
+    duties.ts
+    units.ts
   routes/
     routes/       -> /routes, /routes/new, /routes/:id, /routes/:id/edit
-      hooks.ts    TanStack Query hooks (queries + mutations) and query keys
       RoutesListPage.tsx
       RouteDetailPage.tsx
       RouteFormPage.tsx    create and edit share one component
@@ -31,7 +34,9 @@ src/
   App.tsx         route table
 ```
 
-A new endpoint group gets its own file under `api/`; do not collect them into a single module. A new URL segment gets its own folder under `routes/`.
+A new endpoint group gets its own file under `api/` **and** one under `queries/`; do not collect either into a single module. A new URL segment gets its own folder under `routes/`, holding pages only.
+
+`routes/` may import from `queries/` and `components/`, never the reverse — a shared component reaching into a route folder inverts the structure.
 
 Components consume a feature through a hook, never a `fetch` call inline — swapping the data source must not touch a component.
 

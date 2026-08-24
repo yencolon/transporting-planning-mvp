@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChevronRightIcon, PlusIcon, RouteIcon } from "../../components/icons";
 import { Empty, ErrorMessage, Loading } from "../../components/StatusMessage";
-import { useRoutes } from "./hooks";
+import { useRoutes } from "../../queries/routes";
 
 export function RoutesListPage() {
   const { data: routes, isPending, error } = useRoutes();
