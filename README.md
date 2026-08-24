@@ -7,7 +7,12 @@ regla se sostiene incluso bajo peticiones concurrentes.
 
 ## Demo en vivo
 
-<https://web-gold-two-80.vercel.app/>
+- Aplicación: <https://web-gold-two-80.vercel.app/>
+- API: <https://transporting-planning-mvp-api.vercel.app/>
+- Documentación (Swagger): <https://transporting-planning-mvp-api.vercel.app/docs>
+
+Sobre Vercel y Supabase. La primera petición puede tardar un par de segundos
+por el arranque en frío de la función.
 
 ## Stack
 
